@@ -44,3 +44,23 @@ Communication and collaboration are supported through the **#ProDevProjectNexus*
 
 ## Repository
 GitHub Repository: **alx-project-nexus**  
+
+## Getting started (local dev)
+
+This repo contains a Django project (`nexus`) and a `catalog` app implementing the product catalog APIs.
+
+- Create and activate a virtual environment (Windows PowerShell):
+
+```powershell
+python -m venv venv; .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+- Run migrations and start the dev server (uses SQLite by default; to use PostgreSQL set `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` in a `.env` file):
+
+```powershell
+python manage.py migrate
+python manage.py runserver
+```
+
+API docs (Swagger UI) will be available at `http://127.0.0.1:8000/api/docs/`.
