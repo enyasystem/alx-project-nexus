@@ -1,0 +1,76 @@
+name: Integration
+
+on:
+  push:
+    branches: [ feat/jwt-auth, main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          # Use a GitHub Actions secret for the DB password
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          # Allow trust auth in CI when a password secret is not set
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do pg_isready -h localhost -p 5432 && break || sleep 1; done
+
+      - name: Run migrations
+        run: |
+          python manage.py migrate
+
+      - name: Seed database
+        run: |
+          python manage.py seed
+
+      - name: Run smoke tests
+        env:
+          DJANGO_DEBUG: '1'
+        run: |
+          # start the Django development server in background
+          python manage.py runserver 0.0.0.0:8000 &
+          # wait for port 8000 to be ready
+          for i in {1..60}; do
+            ss -ltn | grep -q ':8000' && break || sleep 1
+          done
+          # run the smoke tests against the local server
+          python ci/smoke_test.py
+
+      - name: Build Docker image (validate Dockerfile)
+        run: |
+          docker build -t projectnexus-ci:latest .

@@ -49,7 +49,23 @@ GitHub Repository: **alx-project-nexus**
 
 This repo contains a Django project (`nexus`) and a `catalog` app implementing the product catalog APIs.
 
-- Create and activate a virtual environment (Windows PowerShell):
+
+Performance profiling
+---------------------
+
+There is a small helper script at `scripts/seed_and_profile.py` to seed products and profile the product-list endpoint.
+
+Run it after starting a dev server (Postgres recommended for realistic results):
+
+```powershell
+& .\venv\Scripts\Activate.ps1
+# Seed via Django shell (1000 products)
+python manage.py shell -c "import scripts.seed_and_profile as s; s.seed(1000)"
+# Or run the script which will attempt to seed then profile
+python scripts/seed_and_profile.py --host http://localhost:8000 --count 1000
+```
+
+The script prints simple latency stats (avg/min/max) for multiple iterations.
 
 ```powershell
 python -m venv venv; .\venv\Scripts\Activate.ps1
@@ -64,3 +80,52 @@ python manage.py runserver
 ```
 
 API docs (Swagger UI) will be available at `http://127.0.0.1:8000/api/docs/`.
+
+Seeding the database (local dev)
+
+1. Activate your virtualenv and install deps:
+
+```powershell
+python -m venv venv; .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+2. Run the seed command to populate sample data:
+
+```powershell
+python manage.py seed
+```
+
+Docker Compose (Postgres + Django)
+
+Start services with Docker Compose (requires Docker):
+
+```powershell
+docker compose up --build
+```
+
+The Django app will run at `http://127.0.0.1:8000` and Postgres at `localhost:5432`.
+
+Docker build notes
+
+- A `Dockerfile` and `.dockerignore` are included to build the web image.
+- To build locally run (requires Docker):
+
+```powershell
+docker compose build web
+docker compose up web
+```
+
+- If you see a connection error when building, ensure Docker Desktop or the Docker daemon is running.
+
+Profiling with Docker Compose
+----------------------------
+
+After starting the stack with `docker compose up --build`, seed the database and run the profiling script from within the web container or from your host targeting the running server. Example (host):
+
+```powershell
+# wait for migrations to finish, then on host
+python scripts/seed_and_profile.py --host http://localhost:8000 --count 1000
+```
+
+
