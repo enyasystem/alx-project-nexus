@@ -51,6 +51,13 @@ jobs:
         env:
           DJANGO_DEBUG: '1'
         run: |
+          # start the Django development server in background
+          python manage.py runserver 0.0.0.0:8000 &
+          # wait for port 8000 to be ready
+          for i in {1..60}; do
+            ss -ltn | grep -q ':8000' && break || sleep 1
+          done
+          # run the smoke tests against the local server
           python ci/smoke_test.py
 
       - name: Build Docker image (validate Dockerfile)
