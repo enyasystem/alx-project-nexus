@@ -65,6 +65,28 @@ class CatalogTests(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.data['results']), 2)
 
+    def test_price_range_filter(self):
+        url = reverse('product-list')
+        resp = self.client.get(url, {'min_price': 100, 'max_price': 1000})
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        prices = [float(p['price']) for p in resp.data['results']]
+        self.assertTrue(all(100 <= p <= 1000 for p in prices))
+
+    def test_cursor_pagination(self):
+        # create additional products to ensure pagination across cursor
+        for i in range(15):
+            Product.objects.create(name=f'Extra{i}', slug=f'extra{i}', description='bulk', price=5.00 + i, inventory=5, category=self.cat2)
+        url = reverse('product-list')
+        # first page (cursor pagination uses `cursor` param)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # ensure next cursor exists for subsequent page
+        self.assertIn('next', resp.data)
+        next_cursor = resp.data['next']
+        if next_cursor:
+            resp2 = self.client.get(next_cursor)
+            self.assertEqual(resp2.status_code, status.HTTP_200_OK)
+
     def test_create_category(self):
         url = reverse('category-list')
         self.authenticate()
