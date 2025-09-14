@@ -1,9 +1,13 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    # python-dotenv may not be installed in every environment used to run tests.
+    # Make loading optional to avoid hard failures during CI or minimal dev setups.
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
