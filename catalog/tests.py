@@ -3,6 +3,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from catalog.models import Category, Product
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class CatalogTests(TestCase):
@@ -23,16 +25,17 @@ class CatalogTests(TestCase):
         Product.objects.create(name='Novel', slug='novel', description='A fiction book', price=20.00, inventory=50, category=self.cat2)
         # Create a user for authenticated operations
         from django.contrib.auth import get_user_model
-        User = get_user_model()
-        User.objects.create_user(username='tester', email='t@x.com', password='safepass123')
+        UserLocal = get_user_model()
+        UserLocal.objects.create_user(username='tester', email='t@x.com', password='safepass123', is_staff=True)
 
     def authenticate(self):
-        """Obtain JWT access token and set Authorization header on the test client."""
-        token_url = reverse('token_obtain_pair')
-        resp = self.client.post(token_url, {'username': 'tester', 'password': 'safepass123'}, format='json')
-        access = resp.data.get('access')
-        if access:
-            self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+        """Authenticate the test client as the staff user using force_authenticate.
+
+        This bypasses token handling for unit tests and focuses the test on
+        view behavior and permissions.
+        """
+        user = User.objects.get(username='tester')
+        self.client.force_authenticate(user=user)
 
     def test_list_products(self):
         url = reverse('product-list')
