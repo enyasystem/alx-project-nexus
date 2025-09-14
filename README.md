@@ -49,7 +49,23 @@ GitHub Repository: **alx-project-nexus**
 
 This repo contains a Django project (`nexus`) and a `catalog` app implementing the product catalog APIs.
 
-- Create and activate a virtual environment (Windows PowerShell):
+
+Performance profiling
+---------------------
+
+There is a small helper script at `scripts/seed_and_profile.py` to seed products and profile the product-list endpoint.
+
+Run it after starting a dev server (Postgres recommended for realistic results):
+
+```powershell
+& .\venv\Scripts\Activate.ps1
+# Seed via Django shell (1000 products)
+python manage.py shell -c "import scripts.seed_and_profile as s; s.seed(1000)"
+# Or run the script which will attempt to seed then profile
+python scripts/seed_and_profile.py --host http://localhost:8000 --count 1000
+```
+
+The script prints simple latency stats (avg/min/max) for multiple iterations.
 
 ```powershell
 python -m venv venv; .\venv\Scripts\Activate.ps1
