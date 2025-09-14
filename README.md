@@ -90,3 +90,16 @@ docker compose up --build
 
 The Django app will run at `http://127.0.0.1:8000` and Postgres at `localhost:5432`.
 
+Docker build notes
+
+- A `Dockerfile` and `.dockerignore` are included to build the web image.
+- To build locally run (requires Docker):
+
+```powershell
+docker compose build web
+docker compose up web
+```
+
+- If you see a connection error when building, ensure Docker Desktop or the Docker daemon is running.
+
+
