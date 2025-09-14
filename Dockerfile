@@ -1,25 +1,52 @@
-FROM python:3.11-slim
+# ---- builder stage ----
+FROM python:3.11-slim AS builder
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
+    build-essential libpq-dev gcc \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code
+WORKDIR /tmp/app
+COPY requirements.txt /tmp/app/
+RUN python -m pip install --upgrade pip
+# install into a temporary prefix so we can copy to final image
+RUN python -m pip install --prefix=/install -r requirements.txt
 
-# Install python dependencies
-COPY requirements.txt /code/
-RUN python -m pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+# ---- runtime stage ----
+FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH=/usr/local/bin:$PATH
 
-# Copy project
-COPY . /code/
+# create non-root user
+RUN groupadd --system app && useradd --system --gid app --home /app app
 
-# Collect static files (optional)
+WORKDIR /app
+
+# copy installed python packages from builder
+COPY --from=builder /install /usr/local
+
+# copy application code
+COPY . /app
+
+# copy entrypoint and make executable
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# collect static at build time if possible; continue on failure
 ENV DJANGO_SETTINGS_MODULE=nexus.settings
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
 RUN python manage.py collectstatic --noinput || true
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# install gunicorn runtime
+RUN python -m pip install --no-cache-dir gunicorn
+
+# ensure correct ownership
+RUN chown -R app:app /app
+
+USER app
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["gunicorn", "nexus.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--log-level", "info"]
