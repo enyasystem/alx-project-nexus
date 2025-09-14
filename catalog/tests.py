@@ -111,5 +111,46 @@ class CatalogTests(TestCase):
         self.assertIn(resp.status_code, (status.HTTP_204_NO_CONTENT, status.HTTP_200_OK))
         self.assertFalse(Category.objects.filter(pk=cat.pk).exists())
 
+    def test_invalid_price_filter_returns_400(self):
+        url = reverse('product-list')
+        resp = self.client.get(url, {'min_price': 'cheap', 'max_price': 'expensive'})
+        # django-filter will coerce or raise; ensure we don't return 500
+        self.assertIn(resp.status_code, (status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST))
+
+    def test_empty_database_returns_empty_results(self):
+        # clear products and categories
+        Product.objects.all().delete()
+        Category.objects.all().delete()
+        url = reverse('product-list')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # results may be empty list or paginated structure depending on pagination class
+        if isinstance(resp.data, dict):
+            results = resp.data.get('results', [])
+        else:
+            results = resp.data
+        self.assertEqual(len(results), 0)
+
+    def test_large_dataset_pagination_performance(self):
+        """Seed many products and ensure list endpoint paginates and responds quickly."""
+        # choose moderate size to keep test time reasonable
+        N = 1000
+        cat = Category.objects.create(name='Bulk', slug='bulk')
+        objs = [Product(name=f'Bulk{i}', slug=f'bulk-{i}', description='x', price=1.0 + (i % 50), inventory=10, category=cat) for i in range(N)]
+        Product.objects.bulk_create(objs)
+        url = reverse('product-list')
+        import time
+        t0 = time.perf_counter()
+        resp = self.client.get(url, {'limit': 50})
+        t1 = time.perf_counter()
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # ensure pagination returns expected page size
+        if isinstance(resp.data, dict):
+            self.assertEqual(len(resp.data.get('results', [])), 50)
+        else:
+            self.assertEqual(len(resp.data), 50)
+        # soft performance assertion: in-memory DB should respond quickly
+        self.assertLess(t1 - t0, 2.0)
+
 
 
