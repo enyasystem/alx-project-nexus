@@ -64,3 +64,29 @@ python manage.py runserver
 ```
 
 API docs (Swagger UI) will be available at `http://127.0.0.1:8000/api/docs/`.
+
+Seeding the database (local dev)
+
+1. Activate your virtualenv and install deps:
+
+```powershell
+python -m venv venv; .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+2. Run the seed command to populate sample data:
+
+```powershell
+python manage.py seed
+```
+
+Docker Compose (Postgres + Django)
+
+Start services with Docker Compose (requires Docker):
+
+```powershell
+docker compose up --build
+```
+
+The Django app will run at `http://127.0.0.1:8000` and Postgres at `localhost:5432`.
+
