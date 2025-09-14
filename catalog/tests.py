@@ -112,3 +112,4 @@ class CatalogTests(TestCase):
         self.assertFalse(Category.objects.filter(pk=cat.pk).exists())
 
 
+
