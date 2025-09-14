@@ -118,4 +118,14 @@ docker compose up web
 
 - If you see a connection error when building, ensure Docker Desktop or the Docker daemon is running.
 
+Profiling with Docker Compose
+----------------------------
+
+After starting the stack with `docker compose up --build`, seed the database and run the profiling script from within the web container or from your host targeting the running server. Example (host):
+
+```powershell
+# wait for migrations to finish, then on host
+python scripts/seed_and_profile.py --host http://localhost:8000 --count 1000
+```
+
 
