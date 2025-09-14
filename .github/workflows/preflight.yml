@@ -30,5 +30,11 @@ jobs:
 
       - name: Test discovery (collect-only)
         run: |
-          # Ensure Django settings module is available for DRF test imports
-          python -m unittest discover --pattern "test*.py" --top-level-directory . --quiet
+          # Initialize Django and perform test discovery without executing tests.
+          python - <<'PY'
+          import os, django, unittest
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nexus.settings')
+          django.setup()
+          suite = unittest.defaultTestLoader.discover('.', pattern='test*.py')
+          print(f"Discovered {suite.countTestCases()} tests")
+          PY
