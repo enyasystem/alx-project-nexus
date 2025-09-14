@@ -57,7 +57,8 @@ def assert_products_ok():
 
 def run_jwt_flow():
     # Register user
-    username = 'ciuser'
+    import uuid
+    username = f'ciuser_{uuid.uuid4().hex[:8]}'
     pw = 'Passw0rd!'
     r = requests.post(f'{BASE}/api/auth/register/', json={'username': username, 'password': pw})
     if r.status_code not in (200, 201):
