@@ -17,6 +17,8 @@ jobs:
           POSTGRES_USER: postgres
           # Use a GitHub Actions secret for the DB password
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          # Allow trust auth in CI when a password secret is not set
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-

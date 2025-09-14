@@ -16,6 +16,8 @@ jobs:
           POSTGRES_USER: postgres
           # Use an Actions secret for the Postgres password in CI
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          # Allow trust auth in short-lived CI containers when a secret isn't provided
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: test_db
         ports:
           - 5432:5432
