@@ -26,7 +26,8 @@ class AuthTests(TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 		user = User.objects.filter(username='testuser').first()
 		self.assertIsNotNone(user)
-		self.assertTrue(user.check_password('safepass123'))
+		# ensure password matches the test constant
+		self.assertTrue(user.check_password(TEST_PASSWORD))
 
 	def test_token_obtain_with_valid_credentials(self):
 		User.objects.create_user(username='alice', email='a@x.com', password=TEST_PASSWORD)
