@@ -34,8 +34,10 @@ COPY . /app
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# collect static at build time if possible; continue on failure
+# create static root directory and collect static at build time if possible; continue on failure
 ENV DJANGO_SETTINGS_MODULE=nexus.settings
+RUN mkdir -p /app/staticfiles \
+ && chown -R app:app /app/staticfiles || true
 RUN python manage.py collectstatic --noinput || true
 
 # install gunicorn runtime
