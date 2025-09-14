@@ -119,3 +119,13 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'E-Commerce Backend APIs',
     'VERSION': '0.1.0',
 }
+
+# Expose JWT bearer auth in the OpenAPI schema so Swagger UI can send tokens
+SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
+SPECTACULAR_SETTINGS['COMPONENTS'].setdefault('securitySchemes', {})
+SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['BearerAuth'] = {
+    'type': 'http',
+    'scheme': 'bearer',
+    'bearerFormat': 'JWT',
+}
+SPECTACULAR_SETTINGS.setdefault('SECURITY', [{'BearerAuth': []}])
