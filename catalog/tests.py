@@ -6,6 +6,9 @@ from catalog.models import Category, Product
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+# Non-sensitive test password used only in unit tests
+TEST_PASSWORD = 'test-pass-1'
+
 
 class CatalogTests(TestCase):
     """Tests for product and category CRUD and listing features.
@@ -23,10 +26,10 @@ class CatalogTests(TestCase):
         Product.objects.create(name='Laptop', slug='laptop', description='A nice laptop', price=1200.00, inventory=10, category=self.cat1)
         Product.objects.create(name='Smartphone', slug='smartphone', description='A smart phone', price=800.00, inventory=15, category=self.cat1)
         Product.objects.create(name='Novel', slug='novel', description='A fiction book', price=20.00, inventory=50, category=self.cat2)
-        # Create a user for authenticated operations
-        from django.contrib.auth import get_user_model
-        UserLocal = get_user_model()
-        UserLocal.objects.create_user(username='tester', email='t@x.com', password='safepass123', is_staff=True)
+    # Create a user for authenticated operations
+    from django.contrib.auth import get_user_model
+    UserLocal = get_user_model()
+    UserLocal.objects.create_user(username='tester', email='t@x.com', password=TEST_PASSWORD, is_staff=True)
 
     def authenticate(self):
         """Authenticate the test client as the staff user using force_authenticate.
