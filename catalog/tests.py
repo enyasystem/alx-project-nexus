@@ -23,13 +23,20 @@ class CatalogTests(TestCase):
         self.cat1 = Category.objects.create(name='Electronics', slug='electronics')
         self.cat2 = Category.objects.create(name='Books', slug='books')
         # Create products
-        Product.objects.create(name='Laptop', slug='laptop', description='A nice laptop', price=1200.00, inventory=10, category=self.cat1)
-        Product.objects.create(name='Smartphone', slug='smartphone', description='A smart phone', price=800.00, inventory=15, category=self.cat1)
-        Product.objects.create(name='Novel', slug='novel', description='A fiction book', price=20.00, inventory=50, category=self.cat2)
-    # Create a user for authenticated operations
-    from django.contrib.auth import get_user_model
-    UserLocal = get_user_model()
-    UserLocal.objects.create_user(username='tester', email='t@x.com', password=TEST_PASSWORD, is_staff=True)
+        Product.objects.create(
+            name='Laptop', slug='laptop', description='A nice laptop',
+            price=1200.00, inventory=10, category=self.cat1
+        )
+        Product.objects.create(
+            name='Smartphone', slug='smartphone', description='A smart phone',
+            price=800.00, inventory=15, category=self.cat1
+        )
+        Product.objects.create(
+            name='Novel', slug='novel', description='A fiction book',
+            price=20.00, inventory=50, category=self.cat2
+        )
+        # Create a user for authenticated operations inside the test DB
+        User.objects.create_user(username='tester', email='t@x.com', password=TEST_PASSWORD, is_staff=True)
 
     def authenticate(self):
         """Authenticate the test client as the staff user using force_authenticate.
