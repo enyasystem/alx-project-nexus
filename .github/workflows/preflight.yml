@@ -9,6 +9,8 @@ on:
 jobs:
   preflight-check:
     runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: nexus.settings
     steps:
       - uses: actions/checkout@v4
 
@@ -28,4 +30,5 @@ jobs:
 
       - name: Test discovery (collect-only)
         run: |
+          # Ensure Django settings module is available for DRF test imports
           python -m unittest discover --pattern "test*.py" --top-level-directory . --quiet
