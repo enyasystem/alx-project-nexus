@@ -1,0 +1,1 @@
+"""Catalog app package marker."""
