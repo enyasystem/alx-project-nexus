@@ -106,6 +106,25 @@ docker compose up --build
 
 The Django app will run at `http://127.0.0.1:8000` and Postgres at `localhost:5432`.
 
+CI Secrets
+----------
+
+This repository expects database and secret values to be provided via GitHub Actions secrets for CI jobs. Set the following in `Settings → Secrets → Actions` for the repository:
+
+- `POSTGRES_PASSWORD` — password for the CI Postgres service
+- `DJANGO_SECRET_KEY` — Django secret key for CI (use a random 50+ character value)
+
+Rotation guidance
+-----------------
+
+If any secret was accidentally committed, rotate it immediately:
+
+1. Generate a new secret value (DB password, API key, etc.).
+2. Update the service (rotate DB user/password in your Postgres host or managed DB).
+3. Update the corresponding GitHub Actions secret value.
+4. Re-run CI to ensure jobs succeed with the new secret.
+5. Optionally, remove the old value from git history using `git filter-repo` or BFG (coordinate with collaborators). Always rotate credentials even after history rewrite.
+
 Docker build notes
 
 - A `Dockerfile` and `.dockerignore` are included to build the web image.
@@ -127,5 +146,24 @@ After starting the stack with `docker compose up --build`, seed the database and
 # wait for migrations to finish, then on host
 python scripts/seed_and_profile.py --host http://localhost:8000 --count 1000
 ```
+
+Integration tests & CI
+----------------------
+
+A minimal integration smoke test is included at `tests/integration/test_smoke_db.py`. It verifies the database connection and that a health endpoint responds.
+
+Run the smoke tests locally (after migrations):
+
+```powershell
+python manage.py migrate
+python -m pytest tests/integration/test_smoke_db.py
+```
+
+To run the integration workflow on GitHub Actions, ensure the following repository secrets are set in `Settings → Secrets → Actions`:
+
+- `POSTGRES_PASSWORD`
+- `DJANGO_SECRET_KEY`
+
+You can trigger the workflow manually from the Actions tab (`workflow_dispatch`) or by pushing changes to the branch.
 
 
