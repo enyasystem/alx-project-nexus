@@ -31,6 +31,7 @@ on:
     branches: [ main, 'feat/jwt-auth' ]
   push:
     branches: [ main ]
+
 jobs:
   precommit:
     name: Run pre-commit hooks
@@ -49,3 +50,4 @@ jobs:
       - name: Run pre-commit
         run: |
           pre-commit run --all-files
+name: Pre-commit (PR + main)

@@ -1,13 +1,11 @@
 name: CI
 
+name: CI
 on:
   push:
-    branches:
-      - main
-      - 'feat/jwt-auth'
+    branches: [ main, 'feat/jwt-auth' ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test-and-build:
@@ -67,97 +65,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: nexus-web:ci
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-      - 'feat/jwt-auth'
-  pull_request:
-    branches:
-      - main
-name: CI
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-      - 'feat/jwt-auth'
-  pull_request:
-    branches:
-      - main
-
-
-on:
-  push:
-    branches:
-      - main
-      - 'feat/jwt-auth'
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d test_db" --health-interval 10s --health-timeout 5s --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Wait for Postgres
-        run: |
-          for i in {1..30}; do pg_isready -h 127.0.0.1 -p 5432 -U postgres -d test_db && break || sleep 1; done
-
-      - name: Run migrations
-        env:
-          POSTGRES_HOST: 127.0.0.1
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          python manage.py migrate --noinput
-
-      - name: Run tests
-        env:
-          POSTGRES_HOST: 127.0.0.1
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: test_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          python manage.py test --noinput
-
-      - name: Build Docker image (validate Dockerfile)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: nexus-web:ci
-
+          tags: 'nexus-web:ci'

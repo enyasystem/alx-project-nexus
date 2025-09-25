@@ -1,81 +1,55 @@
-name: Preflight
+name: Preflight checks
+
+name: Preflight checks
 
 on:
   push:
-    branches: [ main, feat/jwt-auth ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ main, feat/jwt-auth ]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  preflight-check:
+  validate-workflows:
+    name: Validate workflow YAML
     runs-on: ubuntu-latest
-    env:
-      DJANGO_SETTINGS_MODULE: nexus.settings
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate YAML files
+        run: |
+          python - <<'PY'
+          import glob, sys, yaml
+          errors = 0
+          for p in glob.glob('.github/workflows/*.yml'):
+              try:
+                  with open(p, 'r', encoding='utf-8') as f:
+                      list(yaml.safe_load_all(f))
+              except Exception as e:
+                  print(p + ':', e)
+                  errors += 1
+          if errors:
+              sys.exit(1)
+          print('All workflow YAML files parse OK')
+          PY
+
+  pre-commit:
+    name: Run pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install deps
+      - name: Install pre-commit
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install pre-commit
 
-      - name: Syntax check (py_compile)
-        run: |
-          python -m py_compile $(git ls-files "**/*.py")
-
-      - name: Test discovery (collect-only)
-        run: |
-          # Initialize Django and perform test discovery without executing tests.
-          python - <<'PY'
-          import os, django, unittest
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nexus.settings')
-          django.setup()
-          suite = unittest.defaultTestLoader.discover('.', pattern='test*.py')
-          print(f"Discovered {suite.countTestCases()} tests")
-          PY
-name: Preflight
-
-on:
-  push:
-    branches: [ main, feat/jwt-auth ]
-  pull_request:
-    branches: [ main, feat/jwt-auth ]
-
-jobs:
-  preflight-check:
-    runs-on: ubuntu-latest
-    env:
-      DJANGO_SETTINGS_MODULE: nexus.settings
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Syntax check (py_compile)
-        run: |
-          python -m py_compile $(git ls-files "**/*.py")
-
-      - name: Test discovery (collect-only)
-        run: |
-          # Initialize Django and perform test discovery without executing tests.
-          python - <<'PY'
-          import os, django, unittest
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nexus.settings')
-          django.setup()
-          suite = unittest.defaultTestLoader.discover('.', pattern='test*.py')
-          print(f"Discovered {suite.countTestCases()} tests")
-          PY
-```
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+        run: pre-commit run --all-files

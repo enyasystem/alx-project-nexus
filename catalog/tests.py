@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Non-sensitive test password used only in unit tests
-TEST_PASSWORD = '[REDACTED]'
+# detect-secrets: allowlist secret
+TEST_PASSWORD = '[REDACTED]'  # pragma: allowlist secret
 
 
 class CatalogTests(TestCase):
