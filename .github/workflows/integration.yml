@@ -57,7 +57,7 @@ jobs:
         env:
           POSTGRES_DB: nexus
           POSTGRES_USER: postgres
-          # POSTGRES_PASSWORD is provided to steps via env to avoid exposing secrets in service definition
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
