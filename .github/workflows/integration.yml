@@ -6,6 +6,10 @@ on:
     branches:
       - main
       - 'feat/jwt-auth'
+  pull_request:
+    branches:
+      - main
+      - 'feat/jwt-auth'
 
 jobs:
   preflight:

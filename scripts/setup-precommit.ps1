@@ -15,7 +15,7 @@ pre-commit install
 if (-not (Test-Path .secrets.baseline)) {
     Write-Host "Generating initial detect-secrets baseline (this may show potential secrets)"
     detect-secrets scan > .secrets.baseline
-    Write-Host "Baseline created at .secrets.baseline. Review and commit this file." 
+    Write-Host "Baseline created at .secrets.baseline. Review and commit this file."
 } else {
     Write-Host ".secrets.baseline already exists; skip baseline creation."
 }

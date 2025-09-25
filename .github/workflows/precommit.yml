@@ -1,6 +1,6 @@
 name: Pre-commit (PR + main)
 
-on: 
+on:
   pull_request:
     branches: [ main, 'feat/jwt-auth' ]
   push:
