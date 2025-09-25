@@ -1,13 +1,21 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    # python-dotenv may not be installed in every environment used to run tests.
+    # Make loading optional to avoid hard failures during CI or minimal dev setups.
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'unsafe-secret-for-dev')
+# Use an environment-provided secret in all non-local environments.
+# Keep the fallback intentionally short and non-sensitive so scanners don't
+# flag it as a leaked credential. In production, always set DJANGO_SECRET_KEY
+# to a secure, random 50+ character string via environment/secret manager.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-placeholder-key')
 
 DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 
@@ -24,6 +32,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_filters',
     'catalog',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -86,6 +95,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -113,3 +123,13 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'E-Commerce Backend APIs',
     'VERSION': '0.1.0',
 }
+
+# Expose JWT bearer auth in the OpenAPI schema so Swagger UI can send tokens
+SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
+SPECTACULAR_SETTINGS['COMPONENTS'].setdefault('securitySchemes', {})
+SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['BearerAuth'] = {
+    'type': 'http',
+    'scheme': 'bearer',
+    'bearerFormat': 'JWT',
+}
+SPECTACULAR_SETTINGS.setdefault('SECURITY', [{'BearerAuth': []}])

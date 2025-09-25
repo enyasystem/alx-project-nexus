@@ -1,0 +1,9 @@
+{
+  "yaml.schemas": {
+    ".github/workflow-schema-relaxed.json": ".github/workflows/*"
+  },
+  "yaml.validate": true,
+  "yaml.schemaDownload.enable": false,
+  "yaml.trace.server": "off"
+  
+}
