@@ -6,8 +6,9 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Non-sensitive test password used only in unit tests
-TEST_PASSWORD = 'test-pass-1'
+# Non-sensitive test password used only in unit tests. Prefer setting TEST_PASSWORD in CI or local env.
+import os
+TEST_PASSWORD = os.environ.get('TEST_PASSWORD', 'change-me-testing-password')
 
 
 class AuthTests(TestCase):
