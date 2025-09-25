@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Relaxed GitHub Actions Workflow",
+  "description": "A permissive local schema for GitHub Actions workflows that avoids strict context/secret validation.",
+  "type": ["object", "null"],
+  "additionalProperties": true
+}
