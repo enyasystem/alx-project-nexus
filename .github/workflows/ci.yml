@@ -2,22 +2,13 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - 'feat/jwt-auth'
-  pull_request:
-    branches:
-      - main
-name: CI
-
-on:
-  push:
     branches: [ main, 'feat/jwt-auth' ]
   pull_request:
     branches: [ main ]
 
 jobs:
   test-and-build:
+    name: Test and build
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -74,4 +65,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: nexus-web:ci
+          tags: 'nexus-web:ci'

@@ -6,101 +6,119 @@ on:
     branches:
       - main
       - 'feat/jwt-auth'
+  pull_request:
+    branches:
+      - main
+      - 'feat/jwt-auth'
 
 jobs:
-  preflight:
-    name: Preflight checks
-    runs-on: ubuntu-latest
-    outputs:
-      ok: ${{ steps.check.outputs.ok }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  name: Integration Tests
 
-      - name: Prepare .env and run preflight script
-        id: check
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-        run: |
-          # create a minimal .env from secrets so the same script used locally can validate
-          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" > .env
-          echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> .env
-          # add common entries that docker-compose expects (optional)
-          echo "POSTGRES_DB=nexus" >> .env
-          echo "POSTGRES_USER=postgres" >> .env
+  on:
+    workflow_dispatch:
+    push:
+      branches:
+        - main
+        - 'feat/jwt-auth'
+    pull_request:
+      branches:
+        - main
+        - 'feat/jwt-auth'
 
-          # Run the PowerShell preflight script (pwsh is available on ubuntu-latest)
-          if pwsh -v >/dev/null 2>&1; then
-            if pwsh ./scripts/preflight.ps1 -ShowCompose; then
-              echo "ok=true" >> $GITHUB_OUTPUT
+  jobs:
+    preflight:
+      name: Preflight checks
+      runs-on: ubuntu-latest
+      outputs:
+        ok: ${{ steps.check.outputs.ok }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Prepare .env and run preflight script
+          id: check
+          env:
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+            DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          run: |
+            # create a minimal .env from secrets so the same script used locally can validate
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" > .env
+            echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> .env
+            # add common entries that docker-compose expects (optional)
+            echo "POSTGRES_DB=nexus" >> .env
+            echo "POSTGRES_USER=postgres" >> .env
+
+            # Run the PowerShell preflight script (pwsh is available on ubuntu-latest)
+            if pwsh -v >/dev/null 2>&1; then
+              if pwsh ./scripts/preflight.ps1 -ShowCompose; then
+                echo "ok=true" >> $GITHUB_OUTPUT
+              else
+                echo "ok=false" >> $GITHUB_OUTPUT
+                exit 1
+              fi
             else
+              echo "pwsh not found on runner" >&2
               echo "ok=false" >> $GITHUB_OUTPUT
-              exit 1
+              exit 2
             fi
-          else
-            echo "pwsh not found on runner" >&2
-            echo "ok=false" >> $GITHUB_OUTPUT
-            exit 2
-          fi
 
-  integration:
-    needs: preflight
-    runs-on: ubuntu-latest
-    services:
-      db:
-        image: postgres:15
-        env:
-          POSTGRES_DB: nexus
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d nexus" --health-interval 10s --health-timeout 5s --health-retries 10
+    integration:
+      needs: preflight
+      runs-on: ubuntu-latest
+      services:
+        db:
+          image: postgres:15
+          env:
+            POSTGRES_DB: nexus
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ports:
+            - 5432:5432
+          options: >-
+            --health-cmd "pg_isready -U postgres -d nexus" --health-interval 10s --health-timeout 5s --health-retries 10
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
 
-      # preflight job validates required secrets; running here is redundant so omitted
+        # preflight job validates required secrets; running here is redundant so omitted
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.11'
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+        - name: Install system deps
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
 
-      - name: Install Python deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        - name: Install Python deps
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
 
-      - name: Wait for Postgres
-        run: |
-          for i in {1..30}; do pg_isready -h 127.0.0.1 -p 5432 -U postgres && break || sleep 1; done
+        - name: Wait for Postgres
+          run: |
+            for i in {1..30}; do pg_isready -h 127.0.0.1 -p 5432 -U postgres && break || sleep 1; done
 
-      - name: Run migrations
-        env:
-          POSTGRES_HOST: 127.0.0.1
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: nexus
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: python manage.py migrate --noinput
+        - name: Run migrations
+          env:
+            POSTGRES_HOST: 127.0.0.1
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: nexus
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          run: python manage.py migrate --noinput
 
-      - name: Run integration smoke tests
-        env:
-          POSTGRES_HOST: 127.0.0.1
-          POSTGRES_PORT: 5432
-          POSTGRES_DB: nexus
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: python manage.py test tests.integration.test_smoke_db.SmokeDBTest
+        - name: Run integration smoke tests
+          env:
+            POSTGRES_HOST: 127.0.0.1
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: nexus
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          run: python manage.py test tests.integration.test_smoke_db.SmokeDBTest
 
-      - name: Build Docker image (validate Dockerfile)
-        run: docker build -t projectnexus-ci:latest .
+        - name: Build Docker image (validate Dockerfile)
+          run: docker build -t projectnexus-ci:latest .
