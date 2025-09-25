@@ -8,7 +8,48 @@ on:
       - 'feat/jwt-auth'
 
 jobs:
+  preflight:
+    name: Preflight checks
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.check.outputs.ok }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required secrets
+        id: check
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        run: |
+          missing=0
+          if [ -z "$POSTGRES_PASSWORD" ]; then
+            echo "Secret POSTGRES_PASSWORD is missing" >&2
+            missing=1
+          fi
+          if [ -z "$DJANGO_SECRET_KEY" ]; then
+            echo "Secret DJANGO_SECRET_KEY is missing" >&2
+            missing=1
+          fi
+          if [ "$missing" -eq 1 ]; then
+            echo "ok=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "ok=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show sanitized docker-compose config
+        run: |
+          # print docker-compose config with secrets masked to help debug environment interpolation
+          if [ -f docker-compose.yml ]; then
+            docker-compose config | sed -E 's/POSTGRES_PASSWORD: .+/POSTGRES_PASSWORD: <masked>/g' | sed -E 's/DJANGO_SECRET_KEY: .+/DJANGO_SECRET_KEY: <masked>/g'
+          else
+            echo "No docker-compose.yml found in repository root"
+          fi
+
   integration:
+    needs: preflight
     runs-on: ubuntu-latest
     services:
       db:
@@ -16,7 +57,7 @@ jobs:
         env:
           POSTGRES_DB: nexus
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          # POSTGRES_PASSWORD is provided to steps via env to avoid exposing secrets in service definition
         ports:
           - 5432:5432
         options: >-
@@ -26,12 +67,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify required secrets
-        run: |
-          if [ -z "${{ secrets.POSTGRES_PASSWORD }}" ] || [ -z "${{ secrets.DJANGO_SECRET_KEY }}" ]; then
-            echo "Required secrets POSTGRES_PASSWORD or DJANGO_SECRET_KEY are missing. Please add them in Settings -> Secrets -> Actions." >&2
-            exit 1
-          fi
+      # preflight job validates required secrets; running here is redundant so omitted
 
       - name: Set up Python
         uses: actions/setup-python@v4
