@@ -1,0 +1,13 @@
+# purge-targets.txt
+# Add exact strings, filenames, or regex patterns (one per line) to remove from history.
+# Lines starting with # are ignored.
+
+# Example entries - replace with actual secrets found in commits
+DJANGO_SECRET_KEY=REDACTED_SECRET_VALUE
+POSTGRES_PASSWORD=REDACTED_PASSWORD
+.env
+.env.local
+.env.*
+secrets.json
+**/secrets.yml
+**/credentials.txt
