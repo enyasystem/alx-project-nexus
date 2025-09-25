@@ -17,35 +17,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required secrets
+      - name: Prepare .env and run preflight script
         id: check
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
         run: |
-          missing=0
-          if [ -z "$POSTGRES_PASSWORD" ]; then
-            echo "Secret POSTGRES_PASSWORD is missing" >&2
-            missing=1
-          fi
-          if [ -z "$DJANGO_SECRET_KEY" ]; then
-            echo "Secret DJANGO_SECRET_KEY is missing" >&2
-            missing=1
-          fi
-          if [ "$missing" -eq 1 ]; then
-            echo "ok=false" >> $GITHUB_OUTPUT
-            exit 1
-          else
-            echo "ok=true" >> $GITHUB_OUTPUT
-          fi
+          # create a minimal .env from secrets so the same script used locally can validate
+          echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" > .env
+          echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> .env
+          # add common entries that docker-compose expects (optional)
+          echo "POSTGRES_DB=nexus" >> .env
+          echo "POSTGRES_USER=postgres" >> .env
 
-      - name: Show sanitized docker-compose config
-        run: |
-          # print docker-compose config with secrets masked to help debug environment interpolation
-          if [ -f docker-compose.yml ]; then
-            docker-compose config | sed -E 's/POSTGRES_PASSWORD: .+/POSTGRES_PASSWORD: <masked>/g' | sed -E 's/DJANGO_SECRET_KEY: .+/DJANGO_SECRET_KEY: <masked>/g'
+          # Run the PowerShell preflight script (pwsh is available on ubuntu-latest)
+          if pwsh -v >/dev/null 2>&1; then
+            if pwsh ./scripts/preflight.ps1 -ShowCompose; then
+              echo "ok=true" >> $GITHUB_OUTPUT
+            else
+              echo "ok=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
           else
-            echo "No docker-compose.yml found in repository root"
+            echo "pwsh not found on runner" >&2
+            echo "ok=false" >> $GITHUB_OUTPUT
+            exit 2
           fi
 
   integration:
