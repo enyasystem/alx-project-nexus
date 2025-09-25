@@ -161,6 +161,3 @@ class CatalogTests(TestCase):
             self.assertEqual(len(resp.data), 50)
         # soft performance assertion: in-memory DB should respond quickly
         self.assertLess(t1 - t0, 2.0)
-
-
-

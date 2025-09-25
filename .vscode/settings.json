@@ -5,5 +5,5 @@
   "yaml.validate": true,
   "yaml.schemaDownload.enable": false,
   "yaml.trace.server": "off"
-  
+
 }

@@ -12,9 +12,12 @@ name: CI
 
 on:
   push:
-    branches: [ main, 'feat/jwt-auth' ]
+    branches:
+      - main
+      - 'feat/jwt-auth'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   test-and-build:
