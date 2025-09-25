@@ -27,6 +27,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify required secrets
+        run: |
+          if [ -z "${{ secrets.POSTGRES_PASSWORD }}" ] || [ -z "${{ secrets.DJANGO_SECRET_KEY }}" ]; then
+            echo "Required secrets POSTGRES_PASSWORD or DJANGO_SECRET_KEY are missing. Please add them in Settings -> Secrets -> Actions." >&2
+            exit 1
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
