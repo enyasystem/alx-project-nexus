@@ -76,4 +76,3 @@ jobs:
 
       - name: Build Docker image (validate Dockerfile)
         run: docker build -t projectnexus-ci:latest .
-
