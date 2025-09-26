@@ -4,8 +4,8 @@ This document records the investigation and remediation steps for the secrets ex
 
 Summary
 
-- Date discovered: [INSERT]
-- Discovered by: [INSERT]
+- Date discovered: [26-09-2025]
+- Discovered by: [Enya Elvis]
 - Affected secrets: DJANGO_SECRET_KEY, POSTGRES_PASSWORD (example)
 - Exposure: Committed to git history (private repo) — decision: history purge requested
 
