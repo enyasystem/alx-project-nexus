@@ -47,15 +47,20 @@ jobs:
           mkdir -p site
           mv openapi.html site/index.html
 
-      - name: Deploy to GitHub Pages (use PAGES_PAT if provided)
-        if: ${{ secrets.PAGES_PAT }}
+      - name: Detect publish token
+        id: detect-token
+        run: |
+          if [ -n "${{ secrets.PAGES_PAT }}" ]; then echo "use_pages_pat=true" >> $GITHUB_OUTPUT; else echo "use_pages_pat=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Deploy to GitHub Pages (use PAGES_PAT)
+        if: steps.detect-token.outputs.use_pages_pat == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PAGES_PAT }}
           publish_dir: ./site
 
       - name: Deploy to GitHub Pages (fallback to GITHUB_TOKEN)
-        if: ${{ !secrets.PAGES_PAT }}
+        if: steps.detect-token.outputs.use_pages_pat == 'false'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
