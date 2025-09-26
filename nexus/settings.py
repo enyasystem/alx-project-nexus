@@ -127,9 +127,12 @@ SPECTACULAR_SETTINGS = {
 # Expose JWT bearer auth in the OpenAPI schema so Swagger UI can send tokens
 SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
 SPECTACULAR_SETTINGS['COMPONENTS'].setdefault('securitySchemes', {})
-SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['BearerAuth'] = {
+SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['jwtAuth'] = {
     'type': 'http',
     'scheme': 'bearer',
     'bearerFormat': 'JWT',
 }
-SPECTACULAR_SETTINGS.setdefault('SECURITY', [{'BearerAuth': []}])
+# Use the same key name in the global security requirement so the schema is
+# consistent and Swagger UI only needs a single scheme name to present the
+# Authorize control.
+SPECTACULAR_SETTINGS.setdefault('SECURITY', [{'jwtAuth': []}])
