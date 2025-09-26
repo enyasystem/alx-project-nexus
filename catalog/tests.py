@@ -8,7 +8,7 @@ User = get_user_model()
 
 # Non-sensitive test password used only in unit tests
 # detect-secrets: allowlist secret
-TEST_PASSWORD = 'test-pass-1'  # pragma: allowlist secret
+TEST_PASSWORD = '[REDACTED]'  # pragma: allowlist secret
 
 
 class CatalogTests(TestCase):

@@ -4,7 +4,7 @@ Summary
 -------
 - Date discovered: 2025-09-26
 - Detected by: GitGuardian on PR #10
-- Detected secret: literal password `test-pass-1`
+- Detected secret: literal password `[REDACTED]`
 - Where found: `accounts/tests.py` in commit `4a8da053a535b4cbe941010a5cb6da6e1c8c7892` (short: `4a8da05`)
 - GitGuardian finding id: 20808320
 
@@ -30,7 +30,7 @@ git checkout -b backup/pre-purge-$(Get-Date -Format yyyyMMddHHmmss)
 git push origin HEAD:refs/heads/backup/pre-purge-$(Get-Date -Format yyyyMMddHHmmss)
 
 # Create a list file containing the secret(s) to remove
-"test-pass-1" | Out-File -Encoding utf8 ..\secrets-to-remove.txt
+"[REDACTED]" | Out-File -Encoding utf8 ..\secrets-to-remove.txt
 
 # On a separate clone (mirror) run (examples in bash):
 # pip install git-filter-repo
@@ -50,7 +50,7 @@ Body:
 ```
 Team,
 
-GitGuardian detected a hardcoded secret `test-pass-1` in commit 4a8da05 (file accounts/tests.py). Treat this credential as compromised. Please rotate/revoke it now and confirm here.
+GitGuardian detected a hardcoded secret `[REDACTED]` in commit 4a8da05 (file accounts/tests.py). Treat this credential as compromised. Please rotate/revoke it now and confirm here.
 
 If we need to purge history, we'll schedule a maintenance window and I will perform the rewrite and force-push; contributors will need to rebase or reclone.
 
