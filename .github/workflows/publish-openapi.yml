@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -47,8 +47,15 @@ jobs:
           mkdir -p site
           mv openapi.html site/index.html
 
-      - name: Deploy to GitHub Pages (push gh-pages)
-        # use peaceiris/actions-gh-pages which publishes the `site` dir by git push
+      - name: Deploy to GitHub Pages (use PAGES_PAT if provided)
+        if: ${{ secrets.PAGES_PAT }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.PAGES_PAT }}
+          publish_dir: ./site
+
+      - name: Deploy to GitHub Pages (fallback to GITHUB_TOKEN)
+        if: ${{ !secrets.PAGES_PAT }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
