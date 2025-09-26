@@ -47,12 +47,9 @@ jobs:
           mkdir -p site
           mv openapi.html site/index.html
 
-      - name: Upload site artifact for Pages
-        # bump to v2 to avoid internal use of deprecated upload-artifact v3
-        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to GitHub Pages (push gh-pages)
+        # use peaceiris/actions-gh-pages which publishes the `site` dir by git push
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./site
-
-      - name: Deploy to GitHub Pages
-        # bump to v2 to pick up newer dependencies and avoid deprecated internals
-        uses: actions/deploy-pages@v2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
