@@ -1,0 +1,164 @@
+﻿﻿name: Integration Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, 'feat/jwt-auth' ]
+  pull_request:
+    branches: [ main, 'feat/jwt-auth' ]
+
+jobs:
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nexus" --health-interval 10s --health-timeout 5s --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do pg_isready -h 127.0.0.1 -p 5432 -U postgres && break || sleep 1; done
+
+      - name: Run migrations
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: python manage.py migrate --noinput
+
+      - name: Run integration smoke tests
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: python manage.py test tests.integration.test_smoke_db.SmokeDBTest
+
+      - name: Build Docker image (validate Dockerfile)
+        run: |
+          docker build -t projectnexus-ci:latest .
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, 'feat/jwt-auth' ]
+  pull_request:
+    branches: [ main, 'feat/jwt-auth' ]
+
+jobs:
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nexus" --health-interval 10s --health-timeout 5s --health-retries 10
+        uses: actions/checkout@v4
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, 'feat/jwt-auth' ]
+  pull_request:
+    branches: [ main, 'feat/jwt-auth' ]
+
+jobs:
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nexus" --health-interval 10s --health-timeout 5s --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do pg_isready -h 127.0.0.1 -p 5432 -U postgres && break || sleep 1; done
+
+      - name: Run migrations
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: python manage.py migrate --noinput
+
+      - name: Run integration smoke tests
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: nexus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: python manage.py test tests.integration.test_smoke_db.SmokeDBTest
+
+      - name: Build Docker image (validate Dockerfile)
+        run: |
+          docker build -t projectnexus-ci:latest .
+        with:
+
