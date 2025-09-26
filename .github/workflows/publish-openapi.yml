@@ -1,0 +1,56 @@
+name: Publish OpenAPI docs
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    name: Build OpenAPI and deploy to GitHub Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Generate OpenAPI JSON
+        run: |
+          python manage.py spectacular --file openapi.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bundle with Redoc CLI
+        run: |
+          npm install -g redoc-cli
+          npx redoc-cli bundle openapi.json -o openapi.html
+
+      - name: Prepare site
+        run: |
+          mkdir -p site
+          mv openapi.html site/index.html
+
+      - name: Upload site artifact for Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./site
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
