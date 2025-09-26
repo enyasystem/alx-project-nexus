@@ -8,7 +8,9 @@ User = get_user_model()
 
 # Non-sensitive test password used only in unit tests. Prefer setting TEST_PASSWORD in CI or local env.
 import os
-TEST_PASSWORD = os.environ.get('TEST_PASSWORD', 'change-me-testing-password')
+import secrets
+# Avoid hardcoded default secrets. If TEST_PASSWORD is not set, generate a secure random password at runtime.
+TEST_PASSWORD = os.environ.get('TEST_PASSWORD') or secrets.token_urlsafe(16)
 
 
 class AuthTests(TestCase):
