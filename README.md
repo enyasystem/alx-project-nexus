@@ -262,3 +262,33 @@ npm install -g redoc-cli
 npx redoc-cli bundle openapi.json -o openapi.html
 # open openapi.html in your browser
 ```
+
+PostgreSQL extensions and migration notes
+
+The project includes a migration that creates the `pg_trgm` extension and adds trigram GIN indexes to accelerate substring/ILIKE searches on product `name` and `description`. A few important operational notes:
+
+- Privileges: Creating PostgreSQL extensions requires database privileges (typically a superuser or a user with CREATE EXTENSION rights). If your deployment uses a restricted DB user, the migration that attempts to `CREATE EXTENSION IF NOT EXISTS pg_trgm` may fail with a permissions error.
+
+- Managed Postgres (RDS / Cloud SQL / etc.): Many managed services allow `CREATE EXTENSION` for extensions like `pg_trgm`, but you may need to run the command as the master/superuser or enable the extension through the provider UI. Check your provider documentation.
+
+- Recommended options to ensure success:
+  - Run the migration as a database superuser (temporary elevated privileges) so the extension can be created automatically by the migration.
+  - Or, ask your DBA to run the following SQL once against the target database before running application migrations:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+```
+
+  - If you cannot create extensions in your environment, the migration is safe to skip — the migration code is guarded to only attempt the extension/index creation on PostgreSQL. However, search performance will not benefit from trigram indexing in that case.
+
+- Verification: After running migrations on a Postgres database, verify the extension exists and the indexes are present:
+
+```sql
+-- verify extension
+SELECT extname FROM pg_extension WHERE extname = 'pg_trgm';
+
+-- verify index
+\d+ catalog_product  -- look for catalog_product_trgm_idx and catalog_product_description_trgm_idx
+```
+
+Add this step to your deployment runbook to ensure predictable migrations in production.
