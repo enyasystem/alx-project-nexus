@@ -157,3 +157,24 @@ SPECTACULAR_SETTINGS['COMPONENTS']['securitySchemes']['jwtAuth'] = {
 # consistent and Swagger UI only needs a single scheme name to present the
 # Authorize control.
 SPECTACULAR_SETTINGS.setdefault('SECURITY', [{'jwtAuth': []}])
+
+# Caching configuration: use local memory cache by default, or Redis when USE_REDIS=1
+USE_REDIS = os.getenv('USE_REDIS', '0') == '1'
+CACHE_TTL = int(os.getenv('CACHE_TTL', '60'))  # default cache TTL in seconds for view caching
+if USE_REDIS:
+    # django-redis backend
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }

@@ -3,6 +3,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.conf import settings
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 from .permissions import IsStaffOrReadOnly
@@ -56,3 +59,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     pagination_class = ProductCursorPagination
     # allow image uploads via multipart/form-data
     parser_classes = [MultiPartParser, FormParser]
+
+    # Cache the list view when caching is enabled in settings
+    if getattr(settings, 'USE_REDIS', False):
+        @method_decorator(cache_page(getattr(settings, 'CACHE_TTL', 60)), name='list')
+        def list(self, request, *args, **kwargs):
+            return super().list(request, *args, **kwargs)
