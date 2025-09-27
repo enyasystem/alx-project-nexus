@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser, FormParser
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 from .permissions import IsStaffOrReadOnly
@@ -15,6 +16,34 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsStaffOrReadOnly]
 
 
+@extend_schema_view(
+    create=extend_schema(
+        description="Create product (multipart/form-data with optional image).",
+        request=ProductSerializer,
+        responses=ProductSerializer,
+        examples=[
+            OpenApiExample(
+                'Create product with image',
+                summary='Create product (multipart)',
+                value={
+                    'name': 'Sample Product',
+                    'slug': 'sample-product',
+                    'description': 'A product with image',
+                    'price': '19.99',
+                    'inventory': '5',
+                    'category_id': 1,
+                    'image': '<binary file>'
+                },
+                media_type='multipart/form-data'
+            ),
+        ],
+    ),
+    partial_update=extend_schema(
+        description="Partial update product (supports multipart to update image).",
+        request=ProductSerializer,
+        responses=ProductSerializer,
+    ),
+)
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('category').all()
     serializer_class = ProductSerializer
