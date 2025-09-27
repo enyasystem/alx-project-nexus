@@ -50,4 +50,3 @@ class RegistrationAndLockoutTests(TestCase):
         resp2 = self.client.post(token_url, {'username': 'lockuser', 'password': 'wrong'}, format='json')
         self.assertEqual(resp2.status_code, 403)
         self.assertIn('locked', resp2.data.get('detail').lower())
-

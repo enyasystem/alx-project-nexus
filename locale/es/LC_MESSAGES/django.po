@@ -30,7 +30,7 @@ msgid "This link will expire after a short time for your security."
 msgstr "Este enlace caducará pasados unos minutos por su seguridad."
 
 msgid "Thanks,"
-msgstr "Gracias," 
+msgstr "Gracias,"
 
 # Plain text email opening
 msgid "Hello {{ user.username }},{"
