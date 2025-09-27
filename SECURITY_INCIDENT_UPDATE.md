@@ -115,4 +115,4 @@ Recommended final steps
 - Option A (recommended): Create a repository secret named `PAGES_PAT` containing a personal access token with the following scopes: `repo` and `workflow` (for private repos use `repo` scope; for public-only repos `public_repo` may be sufficient). Then re-run the publish workflow — it should be able to push and succeed.
 - Option B: If you prefer using `GITHUB_TOKEN` only, ensure repository settings allow GitHub Actions to write repository contents (Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests / read and write permissions). After that re-run the workflow.
 
-I can create a follow-up PR that tweaks the workflow further (for example add debugging output or a single-step deploy) if you want me to. 
+I can create a follow-up PR that tweaks the workflow further (for example add debugging output or a single-step deploy) if you want me to.
