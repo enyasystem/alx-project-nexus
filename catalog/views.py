@@ -50,7 +50,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
     ),
 )
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category').all()
     serializer_class = ProductSerializer
     permission_classes = [IsStaffOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -63,6 +62,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'products'
+
+    def get_queryset(self):
+        # Ensure we prefetch related category for list/detail to reduce queries
+        return Product.objects.select_related('category').all()
 
     # Cache the list view when caching is enabled in settings
     if getattr(settings, 'USE_REDIS', False):
