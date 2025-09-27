@@ -1,5 +1,8 @@
 # Project Nexus Documentation
 
+[![CI](https://github.com/enyasystem/alx-project-nexus/actions/workflows/ci.yml/badge.svg)](https://github.com/enyasystem/alx-project-nexus/actions/workflows/ci.yml)
+[![OpenAPI Docs](https://github.com/enyasystem/alx-project-nexus/actions/workflows/publish-openapi.yml/badge.svg)](https://enyasystem.github.io/alx-project-nexus/)
+
 ## Overview
 This repository documents major learnings from the ProDev Backend Engineering program.
 It serves as a knowledge hub for backend technologies, concepts, challenges, and best practices covered during the program.
