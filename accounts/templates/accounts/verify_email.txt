@@ -1,0 +1,12 @@
+{% load i18n %}
+
+{% blocktrans %}Hello {{ user.username }},{% endblocktrans %}
+
+{% trans "Please verify your email address by visiting the link below:" %}
+
+{{ verify_link }}
+
+{% trans "If you did not sign up for an account, you can safely ignore this message." %}
+
+{% trans "Thanks," %}
+Project Nexus
