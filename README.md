@@ -291,4 +291,61 @@ SELECT extname FROM pg_extension WHERE extname = 'pg_trgm';
 \d+ catalog_product  -- look for catalog_product_trgm_idx and catalog_product_description_trgm_idx
 ```
 
-Add this step to your deployment runbook to ensure predictable migrations in production.
+Deployment runbook: ensure pg_trgm and run migrations
+
+When deploying to a PostgreSQL database, ensure the `pg_trgm` extension is present (required by the project's trigram GIN index migration) or run migrations with a user that has the privilege to create extensions.
+
+Options:
+
+1) Create the extension manually (recommended for environments with restricted DB users)
+
+- Run as a privileged user (psql shell or provider console):
+
+```sql
+-- connect as a superuser or a user with CREATE EXTENSION privilege
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+```
+
+- Example using psql:
+
+```bash
+PGHOST=your-db-host PGPORT=5432 PGUSER=postgres PGPASSWORD=yourpw psql -d your_db -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+```
+
+- Example using Docker (when Postgres is local in docker-compose):
+
+```bash
+# run this on the host while the postgres container is running
+docker exec -i your_postgres_container psql -U postgres -d your_db -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+```
+
+2) Run migrations with an elevated DB user (simpler for automated deploys)
+
+- Temporarily configure your deployment to use a DB user with CREATE EXTENSION privilege (or the master/superuser) and run:
+
+```bash
+python manage.py migrate --noinput
+```
+
+- After migrations succeed, revert to a restricted DB user for runtime if desired.
+
+Verification
+
+- Confirm extension exists:
+
+```sql
+SELECT extname FROM pg_extension WHERE extname = 'pg_trgm';
+```
+
+- Confirm indexes exist:
+
+```sql
+\d+ catalog_product
+# or
+SELECT indexname FROM pg_indexes WHERE tablename = 'catalog_product';
+```
+
+Notes
+
+- Managed Postgres offerings (RDS, Cloud SQL, etc.) often allow enabling common extensions via their UI or require running `CREATE EXTENSION` as the master user. Consult your provider docs.
+- If you cannot enable extensions, the migration will skip index creation (the migration is guarded) but search performance will not benefit from trigram indexing.
