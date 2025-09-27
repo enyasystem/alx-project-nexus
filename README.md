@@ -277,6 +277,19 @@ npx redoc-cli bundle openapi.json -o openapi.html
 # open openapi.html in your browser
 ```
 
+Migrations included in this repository
+
+- The repository includes the Django migration files required to set up the database schema for the `catalog` app. Key migrations:
+  - `0001_initial.py` — initial models for Product/Category.
+  - `0002_product_catalog_pro_categor_7c1c1f_idx_and_more.py` — additional indexes and constraints.
+  - `0003_add_product_image.py` — adds the `image` field to `Product`.
+  - `0004_add_name_index.py` — additional name index.
+  - `0005_add_trigram_index.py` — creates `pg_trgm` extension and trigram GIN indexes (PostgreSQL only).
+
+Notes
+- Run `python manage.py migrate` to apply these migrations.
+- The `0005_add_trigram_index.py` migration is guarded so it will no-op on non-Postgres databases; for Postgres you may need permission to run `CREATE EXTENSION IF NOT EXISTS pg_trgm` (see the "PostgreSQL extensions and migration notes" section above).
+
 PostgreSQL extensions and migration notes
 
 The project includes a migration that creates the `pg_trgm` extension and adds trigram GIN indexes to accelerate substring/ILIKE searches on product `name` and `description`. A few important operational notes:
