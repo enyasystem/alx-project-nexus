@@ -1,0 +1,35 @@
+name: Validate docs
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  validate-readme:
+    name: Validate README runbook
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate README contains required runbook steps
+        run: |
+          set -euo pipefail
+          README=README.md
+
+          echo "Checking for pg_trgm extension guidance..."
+          if ! grep -Fq "CREATE EXTENSION IF NOT EXISTS pg_trgm" "$README"; then
+            echo "ERROR: README is missing pg_trgm creation guidance (CREATE EXTENSION IF NOT EXISTS pg_trgm)"
+            exit 1
+          fi
+
+          echo "Checking for deployment runbook header..."
+          if ! grep -Fq "Deployment runbook" "$README"; then
+            echo "ERROR: README is missing 'Deployment runbook' section"
+            exit 1
+          fi
+
+          echo "README validation passed."
