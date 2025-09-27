@@ -12,3 +12,4 @@ boto3>=1.26
 django-storages>=1.12,<1.15
 django-redis>=5.2
 moto[s3]>=4.0
+django-cors-headers>=3.14
