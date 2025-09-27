@@ -57,7 +57,17 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          python manage.py test --noinput
+          python -m pytest -q
+
+      - name: Run image upload integration test
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: |
+          python -m pytest -q tests/integration/test_product_image_upload.py
 
       - name: Collect static files (local)
         # Force local static collection in CI to validate static pipeline without requiring S3 creds
