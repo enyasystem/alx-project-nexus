@@ -4,6 +4,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
 User = get_user_model()
@@ -48,6 +49,8 @@ class ProductImageUploadTest(TestCase):
         buf = io.BytesIO()
         img.save(buf, format='PNG')
         buf.seek(0)
+        # use SimpleUploadedFile so the upload has a filename/extension
+        uploaded = SimpleUploadedFile('test.png', buf.read(), content_type='image/png')
         data = {
             'name': 'ImgProduct',
             'slug': 'img-product',
@@ -55,7 +58,7 @@ class ProductImageUploadTest(TestCase):
             'price': '3.50',
             'inventory': '2',
             'category_id': str(self.cat.pk),
-            'image': buf,
+            'image': uploaded,
         }
         resp = self.client.post(url, data, format='multipart')
         self.assertEqual(resp.status_code, 201)
