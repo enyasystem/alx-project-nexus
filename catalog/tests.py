@@ -162,3 +162,28 @@ class CatalogTests(TestCase):
             self.assertEqual(len(resp.data), 50)
         # soft performance assertion: in-memory DB should respond quickly
         self.assertLess(t1 - t0, 2.0)
+
+    def test_product_image_upload(self):
+        # Ensure staff can create a product with multipart/form-data including an image
+        import io
+        from PIL import Image
+        self.authenticate()
+        url = reverse('product-list')
+        # create a small in-memory image
+        img = Image.new('RGB', (10, 10), color='red')
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        data = {
+            'name': 'WithImage',
+            'slug': 'with-image',
+            'description': 'Has image',
+            'price': '9.99',
+            'inventory': '1',
+            'category_id': str(self.cat1.pk),
+            'image': buf,
+        }
+        resp = self.client.post(url, data, format='multipart')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # ensure image field present in response (may be URL or null)
+        self.assertIn('image', resp.data)

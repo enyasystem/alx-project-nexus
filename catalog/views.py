@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 from .permissions import IsStaffOrReadOnly
@@ -24,3 +25,5 @@ class ProductViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     # Use cursor pagination by default for product lists (large data sets)
     pagination_class = ProductCursorPagination
+    # allow image uploads via multipart/form-data
+    parser_classes = [MultiPartParser, FormParser]
