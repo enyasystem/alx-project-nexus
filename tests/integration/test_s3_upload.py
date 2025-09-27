@@ -6,13 +6,24 @@ from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
-from moto import mock_s3
+from moto import mock_aws
 import boto3
+from django.conf import settings
 
 User = get_user_model()
 
-@mock_s3
-@override_settings(USE_S3=True, AWS_S3_BUCKET_NAME='test-bucket', AWS_S3_CUSTOM_DOMAIN='test-bucket.s3.amazonaws.com')
+# Ensure django-storages finds the expected bucket setting (AWS_STORAGE_BUCKET_NAME)
+@mock_aws
+@override_settings(
+    USE_S3=True,
+    AWS_S3_BUCKET_NAME='test-bucket',
+    AWS_STORAGE_BUCKET_NAME='test-bucket',
+    AWS_S3_CUSTOM_DOMAIN='test-bucket.s3.amazonaws.com',
+    AWS_ACCESS_KEY_ID='testing',
+    AWS_SECRET_ACCESS_KEY='testing',
+    AWS_S3_REGION_NAME='us-east-1',
+    DEFAULT_FILE_STORAGE='storages.backends.s3boto3.S3Boto3Storage',
+)
 class S3UploadTest(TestCase):
     def setUp(self):
         # create mock bucket
@@ -44,7 +55,13 @@ class S3UploadTest(TestCase):
         self.assertEqual(resp.status_code, 201)
         image_url = resp.data.get('image')
         self.assertIsNotNone(image_url)
+        # compute the key by stripping the custom domain or bucket url
+        domain = getattr(settings, 'AWS_S3_CUSTOM_DOMAIN', None) or f"{getattr(settings, 'AWS_S3_BUCKET_NAME', 'test-bucket')}.s3.amazonaws.com"
+        if image_url.startswith('http') and domain in image_url:
+            key = image_url.split(domain + '/')[1]
+        else:
+            # fallback to basename
+            key = image_url.split('/')[-1]
         # ensure object exists in the mocked bucket
-        key = image_url.split('/')[-1]
         objs = self.s3.list_objects_v2(Bucket='test-bucket', Prefix=key)
-        self.assertTrue('Contents' in objs)
+        self.assertIn('Contents', objs)

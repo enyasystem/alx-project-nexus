@@ -69,6 +69,25 @@ jobs:
         run: |
           python -m pytest -q tests/integration/test_product_image_upload.py
 
+      - name: Run mocked S3 integration test
+        # Run the moto-backed S3 integration test with env overrides so django-storages uses the S3 backend
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          USE_S3: '1'
+          AWS_STORAGE_BUCKET_NAME: 'test-bucket'
+          AWS_S3_BUCKET_NAME: 'test-bucket'
+          AWS_ACCESS_KEY_ID: 'testing'
+          AWS_SECRET_ACCESS_KEY: 'testing'
+          AWS_S3_REGION_NAME: 'us-east-1'
+          AWS_S3_CUSTOM_DOMAIN: 'test-bucket.s3.amazonaws.com'
+        run: |
+          # Ensure moto/boto3 can intercept S3 calls made by django-storages in the test
+          python -m pytest -q tests/integration/test_s3_upload.py
+
       - name: Collect static files (local)
         # Force local static collection in CI to validate static pipeline without requiring S3 creds
         env:
