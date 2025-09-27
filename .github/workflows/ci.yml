@@ -51,6 +51,7 @@ jobs:
 
       - name: Run migrations
         env:
+          DJANGO_SETTINGS_MODULE: "nexus.settings"
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
           POSTGRES_DB: test_db
@@ -61,6 +62,7 @@ jobs:
 
       - name: Run tests
         env:
+          DJANGO_SETTINGS_MODULE: "nexus.settings"
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
           POSTGRES_DB: test_db
@@ -71,6 +73,7 @@ jobs:
 
       - name: Run image upload integration test
         env:
+          DJANGO_SETTINGS_MODULE: "nexus.settings"
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
           POSTGRES_DB: test_db
@@ -83,6 +86,7 @@ jobs:
         # Force local static collection in CI to validate static pipeline without requiring S3 creds
         env:
           USE_S3: '0'
+          DJANGO_SETTINGS_MODULE: "nexus.settings"
         run: |
           python manage.py collectstatic --noinput
 
@@ -123,6 +127,7 @@ jobs:
 
       - name: Run moto-backed S3 test
         env:
+          DJANGO_SETTINGS_MODULE: "nexus.settings"
           USE_S3: '1'
           AWS_STORAGE_BUCKET_NAME: 'test-bucket'
           AWS_S3_BUCKET_NAME: 'test-bucket'
