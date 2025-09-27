@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Products from './pages/Products'
 import NewProduct from './pages/NewProduct'
+import { AuthContext } from './AuthContext'
 
 export default function App(){
   return (
@@ -24,9 +25,17 @@ export default function App(){
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/products/new" element={<NewProduct />} />
+          <Route path="/products/new" element={<Protected><NewProduct /></Protected>} />
         </Routes>
       </main>
     </div>
   )
+}
+
+function Protected({ children }){
+  const { isAuthenticated } = useContext(AuthContext)
+  if(!isAuthenticated){
+    return <div className="max-w-md mx-auto p-6 bg-white rounded shadow">Please <a href="/login" className="text-indigo-600">login</a> to continue.</div>
+  }
+  return children
 }

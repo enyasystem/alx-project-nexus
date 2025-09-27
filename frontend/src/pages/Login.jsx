@@ -1,16 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import axios from 'axios'
+import { AuthContext } from '../AuthContext'
 
 export default function Login(){
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState(null)
+  const { login } = useContext(AuthContext)
 
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/token/`, { username, password })
-      localStorage.setItem('access', res.data.access)
+      login(res.data.access)
       setMsg('Logged in')
     } catch(err){
       setMsg('Login failed')
