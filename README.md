@@ -248,6 +248,20 @@ This repository generates and publishes OpenAPI documentation to GitHub Pages on
 - The workflow `/.github/workflows/publish-openapi.yml` builds the OpenAPI JSON using `drf-spectacular` and bundles it with `redoc-cli` into a single `index.html`.
 - By default the workflow uses `GITHUB_TOKEN` to publish pages. To publish from a different account or with more permissions, set `PAGES_PAT` secret.
 
+API docs (published)
+
+- Live API documentation (Redoc) is published to GitHub Pages:
+  - https://enyasystem.github.io/alx-project-nexus/
+
+- To regenerate locally:
+
+```bash
+python manage.py spectacular --file openapi.json
+# bundle with redoc-cli (requires Node/npm)
+npx redoc-cli bundle openapi.json -o openapi.html
+# open openapi.html in your browser
+```
+
 View docs
 
 - After a successful deployment, pages will be available at `https://<your-github-username>.github.io/alx-project-nexus/` (replace with the repository owner if needed).
