@@ -240,3 +240,25 @@ Deployment checklist for S3
 Verify
 
 - After deployment, upload a product image via the API and confirm the file appears in the S3 bucket and that the `image` field in API responses contains the expected URL.
+
+API documentation publishing
+
+This repository generates and publishes OpenAPI documentation to GitHub Pages on pushes to `main`.
+
+- The workflow `/.github/workflows/publish-openapi.yml` builds the OpenAPI JSON using `drf-spectacular` and bundles it with `redoc-cli` into a single `index.html`.
+- By default the workflow uses `GITHUB_TOKEN` to publish pages. To publish from a different account or with more permissions, set `PAGES_PAT` secret.
+
+View docs
+
+- After a successful deployment, pages will be available at `https://<your-github-username>.github.io/alx-project-nexus/` (replace with the repository owner if needed).
+
+Local preview
+
+- You can generate the OpenAPI JSON and bundle it locally:
+
+```bash
+python manage.py spectacular --file openapi.json
+npm install -g redoc-cli
+npx redoc-cli bundle openapi.json -o openapi.html
+# open openapi.html in your browser
+```
