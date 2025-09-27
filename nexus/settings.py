@@ -122,13 +122,19 @@ if USE_S3:
     # Prefer the new STORAGES setting on supported Django versions; fall back to DEFAULT_FILE_STORAGE
     storage_backend = os.getenv('AWS_STORAGE_BACKEND', 'storages.backends.s3boto3.S3Boto3Storage')
     try:
-        # Django 4.3+ uses STORAGES; set both for compatibility
-        STORAGES = {
-            'default': {
-                'BACKEND': storage_backend,
+        # Use STORAGES on Django 4.3+ to avoid DEFAULT_FILE_STORAGE deprecation
+        import django
+        if getattr(django, 'VERSION', (0,)) >= (4, 3):
+            STORAGES = {
+                'default': {
+                    'BACKEND': storage_backend,
+                }
             }
-        }
+        else:
+            # older Django versions still expect DEFAULT_FILE_STORAGE
+            DEFAULT_FILE_STORAGE = storage_backend
     except Exception:
+        # If django isn't importable for some reason, fall back to the older setting to remain functional
         DEFAULT_FILE_STORAGE = storage_backend
 
     AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME') or os.getenv('AWS_STORAGE_BUCKET_NAME')
