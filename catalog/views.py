@@ -6,6 +6,8 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExam
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.conf import settings
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.decorators import throttle_classes
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 from .permissions import IsStaffOrReadOnly
@@ -59,6 +61,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     pagination_class = ProductCursorPagination
     # allow image uploads via multipart/form-data
     parser_classes = [MultiPartParser, FormParser]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'products'
 
     # Cache the list view when caching is enabled in settings
     if getattr(settings, 'USE_REDIS', False):
