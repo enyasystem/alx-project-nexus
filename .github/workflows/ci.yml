@@ -122,8 +122,8 @@ jobs:
       - name: Install minimal dependencies for moto
         run: |
           python -m pip install --upgrade pip
-          # include pytest and pytest-django so the job can run the test runner
-          pip install moto boto3 django-storages pytest pytest-django
+          # install project requirements so Django and DRF are available for pytest-django
+          pip install -r requirements.txt moto boto3 django-storages pytest pytest-django
 
       - name: Run moto-backed S3 test
         env:
