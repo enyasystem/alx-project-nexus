@@ -69,6 +69,27 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     # Cache the list view when caching is enabled in settings
     if getattr(settings, 'USE_REDIS', False):
-        @method_decorator(cache_page(getattr(settings, 'CACHE_TTL', 60)), name='list')
+        from rest_framework.response import Response
+
+        def _build_list_cache_key(request):
+            # Use full path (path + query string) to differentiate pages/filters
+            return f"product:list:{request.get_full_path()}"
+
         def list(self, request, *args, **kwargs):
-            return super().list(request, *args, **kwargs)
+            # Manual caching allows targeted invalidation from signals
+            cache_key = _build_list_cache_key(request)
+            try:
+                cached = cache.get(cache_key)
+                if cached is not None:
+                    return Response(cached)
+            except Exception:
+                # On any cache error, fall back to normal behavior
+                return super().list(request, *args, **kwargs)
+
+            resp = super().list(request, *args, **kwargs)
+            try:
+                # Store serialized response data (resp.data) for quick return
+                cache.set(cache_key, resp.data, getattr(settings, 'CACHE_TTL', 60))
+            except Exception:
+                pass
+            return resp
