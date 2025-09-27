@@ -101,6 +101,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
+# Optional S3 storage configuration (django-storages). To enable, set USE_S3=1 and provide
+# AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_REGION_NAME in env.
+# Add the following packages to production requirements: boto3, django-storages
+USE_S3 = os.getenv('USE_S3', '0') == '1'
+if USE_S3:
+    # Configure django-storages backend
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', None)
+    # Optional: set custom domain or ACLs
+    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
+    AWS_DEFAULT_ACL = None
+    # Ensure media files served securely
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN or AWS_S3_BUCKET_NAME}.s3.amazonaws.com/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
