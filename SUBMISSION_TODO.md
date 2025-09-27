@@ -9,7 +9,7 @@ Priority tasks (must do first)
   - Action: Open GitHub Actions, re-run failed workflows or inspect logs.
 
 - [ ] 2) Quick functional smoke (local) — 30–60m
-  - Commands: 
+  - Commands:
     - python -m pytest -q
     - python manage.py runserver (manual) / use APIClient to exercise endpoints
   - Verify: register/login (JWT), CRUD products/categories, image upload, filter/sort/paginate
