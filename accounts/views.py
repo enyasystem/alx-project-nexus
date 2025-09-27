@@ -4,8 +4,9 @@ from drf_spectacular.utils import extend_schema
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
+from django.template.loader import render_to_string
 from .serializers import UserSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer
 from django.contrib.auth import get_user_model
 
@@ -40,11 +41,25 @@ class PasswordResetRequestView(generics.GenericAPIView):
         token = PasswordResetTokenGenerator().make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         reset_link = f"{request.build_absolute_uri('/')}api/auth/password-reset-confirm/?uid={uid}&token={token}"
-        # send email (development: console or configured email backend)
+
+        # Render email templates (plain text + HTML)
+        context = {
+            'user': user,
+            'reset_link': reset_link,
+        }
         subject = 'Password reset'
-        message = f'Use the following link to reset your password: {reset_link}'
         from_email = settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else None
-        send_mail(subject, message, from_email, [email], fail_silently=True)
+        text_body = render_to_string('accounts/password_reset_email.txt', context)
+        html_body = render_to_string('accounts/password_reset_email.html', context)
+
+        # Send multi-part email
+        msg = EmailMultiAlternatives(subject=subject, body=text_body, from_email=from_email, to=[email])
+        msg.attach_alternative(html_body, 'text/html')
+        try:
+            msg.send(fail_silently=False)
+        except Exception:
+            # fallback: don't raise; keep response generic
+            pass
         return Response({'detail': 'If an account with that email exists, you will receive reset instructions.'}, status=status.HTTP_200_OK)
 
 
