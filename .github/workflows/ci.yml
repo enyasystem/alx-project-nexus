@@ -42,7 +42,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          # install project dependencies and test runner
+          pip install -r requirements.txt pytest pytest-django
 
       - name: Wait for Postgres
         run: |
