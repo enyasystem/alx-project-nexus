@@ -165,3 +165,54 @@ To run the integration workflow on GitHub Actions, ensure the following reposito
 - `DJANGO_SECRET_KEY`
 
 You can trigger the workflow manually from the Actions tab (`workflow_dispatch`) or by pushing changes to the branch.
+
+## Media storage (optional: Amazon S3)
+
+This project supports storing uploaded media (product images) either on local disk in development or on Amazon S3 in production via `django-storages`.
+
+Quick setup (development - local media):
+
+- Ensure `MEDIA_ROOT` and `MEDIA_URL` are set (already configured in `nexus/settings.py`).
+- During development run the dev server; uploaded files will be stored under `mediafiles/`.
+
+Quick setup (production - S3):
+
+1. Install dependencies:
+
+```bash
+pip install boto3 django-storages
+```
+
+2. Set the following environment variables in your deployment environment:
+
+- `USE_S3=1`  # enable S3-backed media
+- `AWS_S3_BUCKET_NAME` — the S3 bucket name for media
+- `AWS_ACCESS_KEY_ID` — IAM access key ID
+- `AWS_SECRET_ACCESS_KEY` — IAM secret access key
+- `AWS_S3_REGION_NAME` — AWS region (optional)
+- `AWS_S3_CUSTOM_DOMAIN` — optional custom domain for your bucket
+
+3. Confirm `DEFAULT_FILE_STORAGE` uses `storages.backends.s3boto3.S3Boto3Storage` when `USE_S3=1` (this is handled by `nexus/settings.py`).
+
+Security and considerations
+
+- Use a restricted IAM user with only the permissions required for S3 PutObject/GetObject/ListBucket on the media bucket.
+- Use an object lifecycle and bucket policy to control public access if needed.
+- Consider using a CDN (CloudFront) in front of the S3 bucket for improved performance and caching.
+
+Example environment (Docker Compose / Kubernetes secret) snippet:
+
+```yaml
+services:
+  web:
+    environment:
+      - USE_S3=1
+      - AWS_S3_BUCKET_NAME=your-bucket
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_REGION_NAME=us-east-1
+```
+
+Verify
+
+- After deployment, upload a product image via the API and confirm the file appears in the S3 bucket and that the `image` field in API responses contains the expected URL.
