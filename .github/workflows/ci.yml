@@ -59,6 +59,13 @@ jobs:
         run: |
           python manage.py test --noinput
 
+      - name: Collect static files (local)
+        # Force local static collection in CI to validate static pipeline without requiring S3 creds
+        env:
+          USE_S3: '0'
+        run: |
+          python manage.py collectstatic --noinput
+
       - name: Build Docker image (validate Dockerfile)
         uses: docker/build-push-action@v5
         with:
