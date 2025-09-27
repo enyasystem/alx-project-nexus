@@ -119,17 +119,64 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles'
 # Add the following packages to production requirements: boto3, django-storages
 USE_S3 = os.getenv('USE_S3', '0') == '1'
 if USE_S3:
-    # Configure django-storages backend
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+    # Prefer the new STORAGES setting on supported Django versions; fall back to DEFAULT_FILE_STORAGE
+    storage_backend = os.getenv('AWS_STORAGE_BACKEND', 'storages.backends.s3boto3.S3Boto3Storage')
+    try:
+        # Django 4.3+ uses STORAGES; set both for compatibility
+        STORAGES = {
+            'default': {
+                'BACKEND': storage_backend,
+            }
+        }
+    except Exception:
+        DEFAULT_FILE_STORAGE = storage_backend
+
+    AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME') or os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_STORAGE_BUCKET_NAME = AWS_S3_BUCKET_NAME
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', None)
-    # Optional: set custom domain or ACLs
-    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
+    AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', None)
+    # Ensure we don't accidentally leave files publicly writable by default
     AWS_DEFAULT_ACL = None
-    # Ensure media files served securely
+    # Recommended: Use signature v4
+    AWS_S3_SIGNATURE_VERSION = os.getenv('AWS_S3_SIGNATURE_VERSION', 's3v4')
+    # Don't add querystring auth to stored urls (use presigned if needed)
+    AWS_QUERYSTRING_AUTH = False
+    # Cache control for public objects — set a sensible default, override via field-level args if needed
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': os.getenv('AWS_S3_CACHE_CONTROL', 'max-age=86400, public'),
+    }
+    # Use custom domain if provided (CloudFront recommended)
+    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN') or os.getenv('AWS_CLOUDFRONT_DOMAIN')
+    # Optional presigned URL expiry (seconds)
+    AWS_QUERYSTRING_EXPIRE = int(os.getenv('AWS_QUERYSTRING_EXPIRE', '3600'))
+    # Update MEDIA_URL to point to the S3 location or CloudFront.
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN or AWS_S3_BUCKET_NAME}.s3.amazonaws.com/'
+
+    # Security note: when deploying, use an IAM role with least privileges (see README for a policy example)
+    # Example policy for S3 access:
+    # {
+    #     "Version": "2012-10-17",
+    #     "Statement": [
+    #         {
+    #             "Effect": "Allow",
+    #             "Action": [
+    #                 "s3:ListBucket"
+    #             ],
+    #             "Resource": "arn:aws:s3:::your-bucket-name"
+    #         },
+    #         {
+    #             "Effect": "Allow",
+    #             "Action": [
+    #                 "s3:GetObject",
+    #                 "s3:PutObject",
+    #                 "s3:DeleteObject"
+    #             ],
+    #             "Resource": "arn:aws:s3:::your-bucket-name/*"
+    #         }
+    #     ]
+    # }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -200,18 +200,42 @@ Security and considerations
 - Use an object lifecycle and bucket policy to control public access if needed.
 - Consider using a CDN (CloudFront) in front of the S3 bucket for improved performance and caching.
 
-Example environment (Docker Compose / Kubernetes secret) snippet:
+Example IAM policy (least privilege)
 
-```yaml
-services:
-  web:
-    environment:
-      - USE_S3=1
-      - AWS_S3_BUCKET_NAME=your-bucket
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_S3_REGION_NAME=us-east-1
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowS3AccessForMediaBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::your-media-bucket",
+        "arn:aws:s3:::your-media-bucket/*"
+      ]
+    }
+  ]
+}
 ```
+
+Notes:
+- Replace `your-media-bucket` with the intended S3 bucket name.
+- If using CloudFront, prefer to restrict bucket access via an Origin Access Identity (OAI) or Origin Access Control (OAC) instead of making the bucket publicly readable.
+- Do not store credentials in the repository; use secrets managers or environment variables.
+
+Deployment checklist for S3
+
+- Create a dedicated S3 bucket for media.
+- Configure bucket policy to block public access unless intentionally serving public assets.
+- Create an IAM user or role scoped to the bucket using the policy above.
+- Configure `USE_S3=1` and provide `AWS_*` env vars in the deployment environment.
+- If using CloudFront, use a custom domain and set `AWS_S3_CUSTOM_DOMAIN` to the distribution domain.
 
 Verify
 
