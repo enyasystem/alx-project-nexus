@@ -12,6 +12,9 @@ fi
 echo "Running migrations..."
 python manage.py migrate --noinput
 
+echo "Ensuring admin user exists (if ADMIN_* env vars provided)..."
+python -m scripts.create_admin_if_missing || true
+
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
