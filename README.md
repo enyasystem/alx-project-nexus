@@ -48,6 +48,14 @@ Communication and collaboration are supported through the **#ProDevProjectNexus*
 ## Repository
 GitHub Repository: **alx-project-nexus**
 
+## Live demo
+
+The project is deployed and publicly available at:
+
+https://alx-project-nexus-57m5.onrender.com/
+
+Open the admin at https://alx-project-nexus-57m5.onrender.com/admin/ (use the admin credentials configured in the Render service environment variables).
+
 ## Getting started (local dev)
 
 This repo contains a Django project (`nexus`) and a `catalog` app implementing the product catalog APIs.
