@@ -1,0 +1,64 @@
+# Render blueprint for Project Nexus (Python web service + managed Postgres)
+# Replace placeholders before committing. After pushing, create a Blueprint on Render
+# that points to this repository and branch (main). Render will create services from
+# this spec or you can import it when creating a new service.
+
+services:
+  - type: web
+    name: nexus-web
+    env: python
+    region: oregon
+    branch: main
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      bash -lc "python manage.py migrate --noinput && python manage.py collectstatic --noinput && \ 
+      gunicorn nexus.wsgi:application --bind 0.0.0.0:$PORT --workers 3"
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        # generate locally (python -c "import secrets; print(secrets.token_urlsafe(50))")
+        value: "<GENERATE_AND_PASTE_SECRET>"
+      - key: DATABASE_URL
+        # will be injected from the managed database defined below by name
+        fromDatabase: nexus-db
+      - key: DEBUG
+        value: "false"
+      - key: ALLOWED_HOSTS
+        value: "<your-app>.onrender.com"
+      - key: USE_S3
+        value: "false"
+
+# Managed Postgres database for the app. Render will provision this DB for you.
+databases:
+  - name: nexus-db
+    engine: postgres
+    version: "15"
+    plan: starter
+    region: oregon
+    diskGB: 10
+
+# Optional worker service example (uncomment to use Celery later)
+# services:
+#   - type: worker
+#     name: nexus-worker
+#     env: python
+#     region: oregon
+#     branch: main
+#     plan: free
+#     buildCommand: pip install -r requirements.txt
+#     startCommand: >-
+#       bash -lc "celery -A nexus worker --loglevel=info"
+#     envVars:
+#       - key: DATABASE_URL
+#         fromDatabase: nexus-db
+#       - key: REDIS_URL
+#         value: "<your-redis-url>"
+
+# Notes:
+# - Replace ALL <placeholders> with real values before deploying.
+# - For persistent media, set USE_S3=true and add AWS env vars in Render dashboard
+#   (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_REGION_NAME).
+# - If you prefer Docker deployment, change `env` to `docker` and remove build/start commands.
+# - After committing and pushing this file, create a Blueprint in Render UI or import the repo
+#   and Render will create the `nexus-web` service and `nexus-db` database automatically.
