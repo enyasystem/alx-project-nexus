@@ -12,9 +12,8 @@ services:
     plan: free
     autoDeploy: true
     buildCommand: pip install -r requirements.txt
-    startCommand: >-
-      bash -lc "python manage.py migrate --noinput && python manage.py collectstatic --noinput && \ 
-      gunicorn nexus.wsgi:application --bind 0.0.0.0:$PORT --workers 3"
+    # Use the repository start script to avoid shell quoting issues in the Render UI
+    startCommand: ./start.sh
     envVars:
       - key: DJANGO_SECRET_KEY
         # generate locally (python -c "import secrets; print(secrets.token_urlsafe(50))")
@@ -62,3 +61,11 @@ databases:
 # - If you prefer Docker deployment, change `env` to `docker` and remove build/start commands.
 # - After committing and pushing this file, create a Blueprint in Render UI or import the repo
 #   and Render will create the `nexus-web` service and `nexus-db` database automatically.
+
+# IMPORTANT: Do NOT commit real secrets into this file. Instead:
+# 1) Remove any placeholder secret values from this file before committing.
+# 2) Set environment variables securely in the Render dashboard for the service
+#    (Service -> Environment -> Add Environment Variable). Render encrypts secrets at rest.
+# 3) For CI, set values in GitHub Actions secrets (Settings -> Secrets -> Actions).
+# The DJANGO_SECRET_KEY above is intentionally a placeholder. Generate a key locally
+# (python -c "import secrets; print(secrets.token_urlsafe(50))") and paste it into Render UI.
