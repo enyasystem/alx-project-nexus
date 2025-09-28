@@ -30,6 +30,9 @@ COPY --from=builder /install /usr/local
 # copy application code
 COPY . /app
 
+# ensure start.sh is executable inside the image
+RUN chmod +x /app/start.sh || true
+
 # copy entrypoint and make executable
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
