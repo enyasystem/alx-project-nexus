@@ -13,7 +13,8 @@ services:
     autoDeploy: true
     buildCommand: pip install -r requirements.txt
     # Use the repository start script to avoid shell quoting issues in the Render UI
-    startCommand: bash start.sh
+    # Use an absolute shell invocation to avoid PATH/executable-bit issues on Render
+    startCommand: /bin/bash /app/start.sh
     envVars:
       - key: DJANGO_SECRET_KEY
         # generate locally (python -c "import secrets; print(secrets.token_urlsafe(50))")
