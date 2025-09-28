@@ -7,6 +7,14 @@
 This repository documents major learnings from the ProDev Backend Engineering program.
 It serves as a knowledge hub for backend technologies, concepts, challenges, and best practices covered during the program.
 
+
+## Database Schema (ERD)
+
+The following Entity Relationship Diagram (ERD) shows the database schema for the Project Nexus e-commerce system:
+
+![Project Nexus E-commerce ERD](./project-nexus-ERD.png)
+
+
 ## Objectives
 - Consolidate key learnings from the ProDev Backend Engineering program.
 - Document backend technologies, concepts, challenges, and solutions.
