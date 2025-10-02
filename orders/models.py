@@ -52,3 +52,19 @@ class OrderItem(models.Model):
 
     def line_total(self):
         return self.unit_price_cents * self.quantity
+
+
+class IdempotencyKey(models.Model):
+    """Simple storage of idempotency keys to prevent duplicate order creation.
+
+    In production you'd typically use a cache (Redis) with expiry and associate
+    keys with a user or idempotency-owner. This model is a safe, persistent
+    fallback for demonstration.
+    """
+    key = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # store resulting order id if created to return same response
+    order = models.ForeignKey(Order, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.key

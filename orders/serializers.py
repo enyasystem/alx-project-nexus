@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 from .models import Address, Cart, CartItem, Order, OrderItem
 from catalog.models import Product
 
@@ -7,6 +8,17 @@ class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['id', 'product', 'quantity']
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('Quantity must be a positive integer')
+        return value
+
+    def validate_product(self, value):
+        # ensure product exists and is active (simple existence check here)
+        if value is None:
+            raise serializers.ValidationError('Product is required')
+        return value
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -32,34 +44,50 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 def create_order_from_cart(cart, user=None):
-    """Create an Order from a Cart snapshot. This captures product details and reserves inventory.
+    """Create an Order from a Cart snapshot.
 
-    Note: This is intentionally simple: it reduces product.inventory immediately and does not integrate
-    with a payment gateway. Real implementations should use reservation windows and more robust locking.
+    This implementation uses a DB transaction and `select_for_update` on product rows
+    to avoid overselling in concurrent checkouts. It still keeps the logic simple:
+    - locks all products referenced by the cart
+    - verifies inventory, decrements, and creates order + order items
+    - rolls back atomically on any error
     """
     if cart.items.count() == 0:
         raise ValueError("Cart is empty")
 
-    order = Order.objects.create(user=user)
-    total = 0
-    for ci in cart.items.select_related('product'):
-        p = ci.product
-        if p.inventory < ci.quantity:
-            # rollback simple: delete the order and raise
-            order.delete()
-            raise ValueError(f"Not enough inventory for {p.slug}")
-        # decrement inventory
-        p.inventory = p.inventory - ci.quantity
-        p.save()
-        unit_cents = int(p.price * 100)
-        OrderItem.objects.create(
-            order=order,
-            product_name=p.name,
-            product_slug=p.slug,
-            unit_price_cents=unit_cents,
-            quantity=ci.quantity,
-        )
-        total += unit_cents * ci.quantity
-    order.total_cents = total
-    order.save()
-    return order
+    # Acquire a transaction and lock product rows referenced by the cart
+    with transaction.atomic():
+        # create order inside transaction so it will be rolled back on failure
+        order = Order.objects.create(user=user)
+        total = 0
+
+        # Lock all product rows in the cart to prevent races
+        product_ids = [ci.product_id for ci in cart.items.all()]
+        products_qs = Product.objects.select_for_update().filter(id__in=product_ids)
+        locked_products = {p.id: p for p in products_qs}
+
+        for ci in cart.items.select_related('product'):
+            p = locked_products.get(ci.product_id)
+            if p is None:
+                # Should not happen: product deleted after cart created
+                raise ValueError(f"Product {ci.product_id} not available")
+            if p.inventory < ci.quantity:
+                # raise to rollback transaction
+                raise ValueError(f"Not enough inventory for {p.slug}")
+            # decrement inventory and persist
+            p.inventory = p.inventory - ci.quantity
+            p.save()
+
+            unit_cents = int(p.price * 100)
+            OrderItem.objects.create(
+                order=order,
+                product_name=p.name,
+                product_slug=p.slug,
+                unit_price_cents=unit_cents,
+                quantity=ci.quantity,
+            )
+            total += unit_cents * ci.quantity
+
+        order.total_cents = total
+        order.save()
+        return order

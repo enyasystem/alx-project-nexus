@@ -30,3 +30,20 @@ class OrdersTestCase(TestCase):
             self.fail('Expected ValueError')
         except ValueError as exc:
             self.assertIn('Not enough inventory', str(exc))
+
+    def test_sequential_orders_respect_inventory(self):
+        # First cart consumes 4 units, leaving 1. Second cart tries to consume 2 and should fail.
+        cart1 = Cart.objects.create(user=self.user)
+        CartItem.objects.create(cart=cart1, product=self.p, quantity=4)
+        order1 = create_order_from_cart(cart1, user=self.user)
+        self.assertEqual(order1.items.count(), 1)
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.inventory, 1)
+
+        cart2 = Cart.objects.create(user=self.user)
+        CartItem.objects.create(cart=cart2, product=self.p, quantity=2)
+        with self.assertRaises(ValueError):
+            create_order_from_cart(cart2, user=self.user)
+        # inventory should remain unchanged after failed attempt
+        self.p.refresh_from_db()
+        self.assertEqual(self.p.inventory, 1)
