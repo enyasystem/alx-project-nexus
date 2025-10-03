@@ -89,3 +89,27 @@ class OrdersAPITestCase(TestCase):
         resp = self.client.post('/api/orders/carts/', {}, format='json')
         # either 401/403 or 201 depending on configuration; accept 201 or 403
         self.assertIn(resp.status_code, (201, 403, 401))
+
+    def test_variant_reservation_and_checkout(self):
+        # Create a product with a variant and exercise variant reservation -> checkout
+        self.authenticate()
+        from catalog.models import ProductVariant
+        # create product and variant
+        v = ProductVariant.objects.create(product=self.prod, sku='BOOK-A-RED', price='13.00', inventory=2)
+
+        from django.urls import reverse
+        resp = self.client.post(reverse('cart-list'), {}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        cart_id = resp.data['id']
+
+        # add variant item
+        resp = self.client.post(f'/api/orders/carts/{cart_id}/add-item/', {'product': self.prod.id, 'variant': v.id, 'quantity': 1}, format='json')
+        self.assertEqual(resp.status_code, 201)
+
+        # reserve
+        resp = self.client.post(f'/api/orders/carts/{cart_id}/reserve/', {}, format='json')
+        self.assertEqual(resp.status_code, 201)
+
+        # create order from cart
+        resp = self.client.post(reverse('order-create-from-cart'), {'cart_id': cart_id}, format='json')
+        self.assertEqual(resp.status_code, 201)

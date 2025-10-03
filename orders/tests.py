@@ -69,3 +69,33 @@ class OrdersTestCase(TestCase):
         self.assertEqual(order2.items.count(), 1)
         self.p.refresh_from_db()
         self.assertEqual(self.p.inventory, 3)
+
+    def test_variant_reservation_expiry_releases_inventory(self):
+        # create a variant and a reservation that has expired, ensure release restores variant inventory
+        from catalog.models import ProductVariant
+        from orders.models import StockReservation
+        v = ProductVariant.objects.create(product=self.p, sku='TOY-RED', price='10.00', inventory=3)
+        cart = Cart.objects.create(user=self.user)
+        CartItem.objects.create(cart=cart, product=self.p, variant=v, quantity=2)
+        # decrement variant inventory and create reservation
+        v.inventory -= 2
+        v.save()
+        expires = timezone.now() - timezone.timedelta(minutes=1)
+        r = StockReservation.objects.create(product=self.p, variant=v, quantity=2, owner_type='cart', owner_id=str(cart.id), status='active', expires_at=expires)
+        call_command('expire_reservations')
+        r.refresh_from_db()
+        v.refresh_from_db()
+        self.assertEqual(r.status, 'cancelled')
+        self.assertEqual(v.inventory, 3)
+
+    def test_variant_create_order_consumes_variant_inventory(self):
+        # verify create_order_from_cart decrements variant inventory when variant present
+        from catalog.models import ProductVariant
+        v = ProductVariant.objects.create(product=self.p, sku='TOY-BLUE', price='11.00', inventory=4)
+        cart = Cart.objects.create(user=self.user)
+        CartItem.objects.create(cart=cart, product=self.p, variant=v, quantity=2)
+        order = create_order_from_cart(cart, user=self.user)
+        # one order item should be present and variant inventory decreased
+        self.assertEqual(order.items.count(), 1)
+        v.refresh_from_db()
+        self.assertEqual(v.inventory, 2)
