@@ -26,12 +26,31 @@ class CartViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='add-item')
     def add_item(self, request, pk=None):
+        from drf_spectacular.utils import extend_schema, OpenApiExample
         cart = self.get_object()
+        # Example payloads for creating cart items. Variant is optional.
         serializer = CartItemSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # ensure product/quantity are set
         ci = serializer.save(cart=cart)
         return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+
+    # Attach schema with examples for add-item
+    add_item = extend_schema(
+        request=None,
+        examples=[
+            OpenApiExample(
+                'Add product (no variant)',
+                value={'product': 1, 'quantity': 2},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Add product variant',
+                value={'product': 1, 'variant': 5, 'quantity': 1},
+                request_only=True
+            ),
+        ]
+    )(add_item)
 
     @action(detail=True, methods=['post'], url_path='reserve')
     def reserve(self, request, pk=None):
@@ -96,6 +115,14 @@ class CartViewSet(viewsets.ModelViewSet):
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'reservations': [r.id for r in reservations]}, status=status.HTTP_201_CREATED)
+
+    reserve = extend_schema(
+        request=None,
+        description='Reserve stock for all items in the cart. If items include a `variant` id, reservation will apply to the variant SKU.',
+        examples=[
+            OpenApiExample('Reserve', value={}, request_only=True),
+        ]
+    )(reserve)
 
     @action(detail=True, methods=['post'], url_path='cancel-reservations')
     def cancel_reservations(self, request, pk=None):
