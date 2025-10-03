@@ -13,6 +13,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
     path('api/catalog/', include('catalog.urls')),
     path('api/auth/', include('accounts.urls')),
+    path('api/orders/', include('orders.urls')),
 ]
 
 # In development serve uploaded media files directly from MEDIA_ROOT
