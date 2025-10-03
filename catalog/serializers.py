@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'inventory', 'category', 'category_id', 'image', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'slug', 'description', 'price', 'inventory', 'category', 'category_id', 'image', 'images', 'variants', 'created_at', 'updated_at']
 
     def get_images(self, obj):
         return [{'id': i.id, 'url': i.image.url if i.image else None, 'alt': i.alt, 'order': i.order} for i in obj.images.all()]
