@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from catalog.models import Product
+from catalog.models import Product, ProductVariant
 
 
 class Address(models.Model):
@@ -25,6 +25,7 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -49,6 +50,7 @@ class OrderItem(models.Model):
     product_slug = models.CharField(max_length=255)
     unit_price_cents = models.IntegerField()
     quantity = models.PositiveIntegerField()
+    variant_sku = models.CharField(max_length=64, null=True, blank=True)
 
     def line_total(self):
         return self.unit_price_cents * self.quantity
@@ -103,6 +105,7 @@ class StockReservation(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='reservations')
+    variant = models.ForeignKey(ProductVariant, null=True, blank=True, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     owner_type = models.CharField(max_length=32, help_text='e.g., cart, order, session')
     owner_id = models.CharField(max_length=255, help_text='id of the owning entity')

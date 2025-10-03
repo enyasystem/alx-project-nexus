@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from django.db import transaction
 from .models import Address, Cart, CartItem, Order, OrderItem, StockReservation
-from catalog.models import Product
+from catalog.models import Product, ProductVariant
 from .models import Shipment
 
 
 class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity']
+        fields = ['id', 'product', 'variant', 'quantity']
 
     def validate_quantity(self, value):
         if value <= 0:
@@ -20,6 +20,13 @@ class CartItemSerializer(serializers.ModelSerializer):
         if value is None:
             raise serializers.ValidationError('Product is required')
         return value
+
+    def validate(self, attrs):
+        variant = attrs.get('variant')
+        product = attrs.get('product')
+        if variant and variant.product_id != product.id:
+            raise serializers.ValidationError('Variant does not belong to product')
+        return attrs
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -33,7 +40,7 @@ class CartSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['product_name', 'product_slug', 'unit_price_cents', 'quantity']
+        fields = ['product_name', 'product_slug', 'unit_price_cents', 'quantity', 'variant_sku']
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -66,13 +73,18 @@ def create_order_from_cart(cart, user=None):
     # If there are active reservations for this cart, prefer to consume them.
     reservations = list(StockReservation.objects.filter(
         owner_type='cart', owner_id=str(cart.id), status='active'
-    ).select_related('product'))
+    ).select_related('product', 'variant'))
 
     if reservations:
-        # ensure reservations cover all cart items (by product id)
-        res_map = {r.product_id: r for r in reservations}
+        # ensure reservations cover all cart items (by product or variant key)
+        res_map = {}
+        for r in reservations:
+            key = ('v', r.variant_id) if r.variant_id else ('p', r.product_id)
+            res_map[key] = r
+
         for ci in cart.items.all():
-            r = res_map.get(ci.product_id)
+            key = ('v', ci.variant_id) if getattr(ci, 'variant_id', None) else ('p', ci.product_id)
+            r = res_map.get(key)
             if r is None or r.quantity < ci.quantity:
                 raise ValueError('Reservation does not cover cart items')
 
@@ -81,16 +93,30 @@ def create_order_from_cart(cart, user=None):
             order = Order.objects.create(user=user)
             total = 0
             for r in reservations:
-                p = r.product
-                unit_cents = int(p.price * 100)
-                OrderItem.objects.create(
-                    order=order,
-                    product_name=p.name,
-                    product_slug=p.slug,
-                    unit_price_cents=unit_cents,
-                    quantity=r.quantity,
-                )
-                total += unit_cents * r.quantity
+                if r.variant_id:
+                    v = r.variant
+                    unit_price = v.price if v.price is not None else v.product.price
+                    unit_cents = int(unit_price * 100)
+                    OrderItem.objects.create(
+                        order=order,
+                        product_name=v.product.name,
+                        product_slug=v.product.slug,
+                        unit_price_cents=unit_cents,
+                        quantity=r.quantity,
+                        variant_sku=v.sku,
+                    )
+                    total += unit_cents * r.quantity
+                else:
+                    p = r.product
+                    unit_cents = int(p.price * 100)
+                    OrderItem.objects.create(
+                        order=order,
+                        product_name=p.name,
+                        product_slug=p.slug,
+                        unit_price_cents=unit_cents,
+                        quantity=r.quantity,
+                    )
+                    total += unit_cents * r.quantity
                 # mark reservation committed
                 r.status = 'committed'
                 r.save()
@@ -105,32 +131,57 @@ def create_order_from_cart(cart, user=None):
         order = Order.objects.create(user=user)
         total = 0
 
-        # Lock all product rows in the cart to prevent races
-        product_ids = [ci.product_id for ci in cart.items.all()]
+        # Lock product and variant rows referenced by the cart to prevent races
+        product_ids = set(ci.product_id for ci in cart.items.all())
+        variant_ids = set(ci.variant_id for ci in cart.items.all() if getattr(ci, 'variant_id', None))
         products_qs = Product.objects.select_for_update().filter(id__in=product_ids)
         locked_products = {p.id: p for p in products_qs}
+        locked_variants = {}
+        if variant_ids:
+            variants_qs = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
+            locked_variants = {v.id: v for v in variants_qs}
 
         for ci in cart.items.select_related('product'):
-            p = locked_products.get(ci.product_id)
-            if p is None:
-                # Should not happen: product deleted after cart created
-                raise ValueError(f"Product {ci.product_id} not available")
-            if p.inventory < ci.quantity and not p.allow_backorder:
-                # raise to rollback transaction
-                raise ValueError(f"Not enough inventory for {p.slug}")
-            # decrement inventory and persist
-            p.inventory = p.inventory - ci.quantity
-            p.save()
+            if getattr(ci, 'variant_id', None):
+                v = locked_variants.get(ci.variant_id)
+                if v is None:
+                    raise ValueError(f"Variant {ci.variant_id} not available")
+                if v.inventory < ci.quantity:
+                    raise ValueError(f"Not enough inventory for variant {v.sku}")
+                v.inventory = v.inventory - ci.quantity
+                v.save()
+                unit_price = v.price if v.price is not None else v.product.price
+                unit_cents = int(unit_price * 100)
+                OrderItem.objects.create(
+                    order=order,
+                    product_name=v.product.name,
+                    product_slug=v.product.slug,
+                    unit_price_cents=unit_cents,
+                    quantity=ci.quantity,
+                    variant_sku=v.sku,
+                )
+                total += unit_cents * ci.quantity
+            else:
+                p = locked_products.get(ci.product_id)
+                if p is None:
+                    # Should not happen: product deleted after cart created
+                    raise ValueError(f"Product {ci.product_id} not available")
+                if p.inventory < ci.quantity and not p.allow_backorder:
+                    # raise to rollback transaction
+                    raise ValueError(f"Not enough inventory for {p.slug}")
+                # decrement inventory and persist
+                p.inventory = p.inventory - ci.quantity
+                p.save()
 
-            unit_cents = int(p.price * 100)
-            OrderItem.objects.create(
-                order=order,
-                product_name=p.name,
-                product_slug=p.slug,
-                unit_price_cents=unit_cents,
-                quantity=ci.quantity,
-            )
-            total += unit_cents * ci.quantity
+                unit_cents = int(p.price * 100)
+                OrderItem.objects.create(
+                    order=order,
+                    product_name=p.name,
+                    product_slug=p.slug,
+                    unit_price_cents=unit_cents,
+                    quantity=ci.quantity,
+                )
+                total += unit_cents * ci.quantity
 
         order.total_cents = total
         order.save()
