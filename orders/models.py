@@ -29,7 +29,7 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        unique_together = ('cart', 'product')
+        unique_together = ('cart', 'product', 'variant')
 
 
 class Order(models.Model):
@@ -125,17 +125,23 @@ class StockReservation(models.Model):
     def release(self):
         """Cancel the reservation and restore product.inventory."""
         from django.db import transaction
-        from catalog.models import Product
+        from catalog.models import Product, ProductVariant
 
         if self.status != 'active':
             return
 
         with transaction.atomic():
-            p = Product.objects.select_for_update().get(pk=self.product_id)
-            p.inventory = models.F('inventory') + self.quantity
-            p.save()
-            # refresh to ensure value is concrete
-            p.refresh_from_db()
+            # If this reservation is for a variant, restore variant inventory.
+            if self.variant_id:
+                v = ProductVariant.objects.select_for_update().get(pk=self.variant_id)
+                v.inventory = models.F('inventory') + self.quantity
+                v.save()
+                v.refresh_from_db()
+            else:
+                p = Product.objects.select_for_update().get(pk=self.product_id)
+                p.inventory = models.F('inventory') + self.quantity
+                p.save()
+                p.refresh_from_db()
             self.status = 'cancelled'
             self.save()
 

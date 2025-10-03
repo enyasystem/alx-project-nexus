@@ -9,6 +9,11 @@ class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['id', 'product', 'variant', 'quantity']
+        extra_kwargs = {
+            'product': {'help_text': 'ID of the product being added'},
+            'variant': {'help_text': 'Optional ID of the product variant (SKU) to add. If provided, the variant must belong to the product.'},
+            'quantity': {'help_text': 'Quantity to add (integer greater than 0)'},
+        }
 
     def validate_quantity(self, value):
         if value <= 0:
