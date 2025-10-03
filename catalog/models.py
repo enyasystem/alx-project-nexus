@@ -16,6 +16,8 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     inventory = models.PositiveIntegerField(default=0)
+    # whether the product can be sold into negative inventory (backorders)
+    allow_backorder = models.BooleanField(default=False)
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

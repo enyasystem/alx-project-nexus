@@ -68,3 +68,77 @@ class IdempotencyKey(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class PaymentRecord(models.Model):
+    """Record of external payment events for reconciliation."""
+    order = models.ForeignKey(Order, related_name='payments', on_delete=models.CASCADE)
+    provider = models.CharField(max_length=64)  # e.g., 'stripe'
+    provider_id = models.CharField(max_length=255, null=True, blank=True)  # gateway's payment id
+    amount_cents = models.BigIntegerField()
+    currency = models.CharField(max_length=8, default='USD')
+    status = models.CharField(max_length=32)  # e.g., 'succeeded', 'failed'
+    raw = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.provider}:{self.provider_id} ({self.status})"
+
+
+class StockReservation(models.Model):
+    """Reserve stock for a given product and owner (cart or order) by
+    decrementing product.inventory immediately. Reservations must be
+    committed (turned into an order) or cancelled (released) to restore
+    inventory.
+
+    Note: We decrement inventory on reservation to simplify concurrency
+    (single authoritative inventory value). All inventory changes must be
+    performed inside transactions with select_for_update on the Product row.
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('committed', 'Committed'),
+        ('cancelled', 'Cancelled'),
+        ('expired', 'Expired'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='reservations')
+    quantity = models.PositiveIntegerField()
+    owner_type = models.CharField(max_length=32, help_text='e.g., cart, order, session')
+    owner_id = models.CharField(max_length=255, help_text='id of the owning entity')
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default='active')
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['owner_type', 'owner_id']),
+        ]
+
+    def __str__(self):
+        return f"Reservation {self.id} {self.product} x{self.quantity} ({self.status})"
+
+    def release(self):
+        """Cancel the reservation and restore product.inventory."""
+        from django.db import transaction
+        from catalog.models import Product
+
+        if self.status != 'active':
+            return
+
+        with transaction.atomic():
+            p = Product.objects.select_for_update().get(pk=self.product_id)
+            p.inventory = models.F('inventory') + self.quantity
+            p.save()
+            # refresh to ensure value is concrete
+            p.refresh_from_db()
+            self.status = 'cancelled'
+            self.save()
+
+    def commit(self):
+        """Mark reservation as committed (finalized into an order)."""
+        if self.status != 'active':
+            return
+        self.status = 'committed'
+        self.save()

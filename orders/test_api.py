@@ -38,6 +38,23 @@ class OrdersAPITestCase(TestCase):
         self.assertEqual(resp.status_code, 201)
         self.assertIn('id', resp.data)
 
+    def test_reserve_and_commit_flow(self):
+        self.authenticate()
+        from django.urls import reverse
+        # create cart
+        resp = self.client.post(reverse('cart-list'), {}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        cart_id = resp.data['id']
+        # add item
+        resp = self.client.post(f'/api/orders/carts/{cart_id}/add-item/', {'product': self.prod.id, 'quantity': 2}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        # reserve
+        resp = self.client.post(f'/api/orders/carts/{cart_id}/reserve/', {}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        # create order from cart (should consume reservation)
+        resp = self.client.post(reverse('order-create-from-cart'), {'cart_id': cart_id}, format='json')
+        self.assertEqual(resp.status_code, 201)
+
     def test_insufficient_stock_via_api(self):
         self.authenticate()
         from django.urls import reverse
