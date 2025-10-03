@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import Address, Cart, CartItem, Order, OrderItem, StockReservation
 from catalog.models import Product
+from .models import Shipment
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -41,6 +42,13 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'user', 'status', 'total_cents', 'created_at', 'items']
+
+
+class ShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = ['id', 'order', 'address', 'carrier', 'tracking_number', 'status', 'created_at']
+        read_only_fields = ('id', 'order', 'created_at')
 
 
 def create_order_from_cart(cart, user=None):

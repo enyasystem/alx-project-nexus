@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Address, Cart, CartItem, Order, OrderItem
 from .models import PaymentRecord
-from .models import StockReservation
+from .models import StockReservation, Shipment
 
 
 @admin.register(Order)
@@ -23,3 +23,9 @@ class PaymentRecordAdmin(admin.ModelAdmin):
 class StockReservationAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'quantity', 'owner_type', 'owner_id', 'status', 'expires_at', 'created_at')
     list_filter = ('status', 'owner_type')
+
+
+@admin.register(Shipment)
+class ShipmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'status', 'carrier', 'tracking_number', 'created_at')
+    list_filter = ('status',)

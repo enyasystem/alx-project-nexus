@@ -55,6 +55,24 @@ class OrdersAPITestCase(TestCase):
         resp = self.client.post(reverse('order-create-from-cart'), {'cart_id': cart_id}, format='json')
         self.assertEqual(resp.status_code, 201)
 
+    def test_create_shipment_as_admin(self):
+        from django.urls import reverse
+        self.authenticate()
+        resp = self.client.post(reverse('cart-list'), {}, format='json')
+        cart_id = resp.data['id']
+        resp = self.client.post(f'/api/orders/carts/{cart_id}/add-item/', {'product': self.prod.id, 'quantity': 1}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        resp = self.client.post(reverse('order-create-from-cart'), {'cart_id': cart_id}, format='json')
+        self.assertEqual(resp.status_code, 201)
+        order_id = resp.data['id']
+        admin = User.objects.create_superuser(username='admin', email='a@a.com', password='pw')
+        resp = self.client.post(reverse('token_obtain_pair'), {'username': 'admin', 'password': 'pw'}, format='json')
+        self.assertEqual(resp.status_code, 200)
+        token = resp.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        resp = self.client.post(f'/api/orders/orders/{order_id}/create-shipment/', {'carrier': 'DHL', 'tracking_number': 'ABC123'}, format='json')
+        self.assertEqual(resp.status_code, 201)
+
     def test_insufficient_stock_via_api(self):
         self.authenticate()
         from django.urls import reverse

@@ -7,6 +7,8 @@ from .models import Cart, CartItem, Order, PaymentRecord
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, create_order_from_cart
 from .models import IdempotencyKey
 from .models import StockReservation
+from .models import Shipment
+from .serializers import ShipmentSerializer
 from drf_spectacular.utils import extend_schema, OpenApiExample
 
 
@@ -104,6 +106,9 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        # Admins should be able to access all orders for management
+        if user and getattr(user, 'is_staff', False):
+            return Order.objects.all()
         return Order.objects.filter(user=user)
 
     @action(detail=False, methods=['post'], url_path='create-from-cart')
@@ -132,6 +137,13 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
             ik.save()
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['post'], url_path='create-shipment', permission_classes=[permissions.IsAdminUser])
+    def create_shipment(self, request, pk=None):
+        order = self.get_object()
+        serializer = ShipmentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(order=order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     @action(detail=False, methods=['post'], url_path='webhook', permission_classes=[permissions.AllowAny])
     def webhook(self, request):
         # Placeholder for payment gateway webhooks (stripe, paypal, etc.)

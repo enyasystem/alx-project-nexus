@@ -142,3 +142,22 @@ class StockReservation(models.Model):
             return
         self.status = 'committed'
         self.save()
+
+
+class Shipment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    order = models.ForeignKey(Order, related_name='shipments', on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, null=True, blank=True, on_delete=models.SET_NULL)
+    carrier = models.CharField(max_length=64, blank=True)
+    tracking_number = models.CharField(max_length=128, blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Shipment {self.id} for Order {self.order_id} ({self.status})"
