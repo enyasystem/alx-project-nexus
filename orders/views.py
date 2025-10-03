@@ -46,29 +46,53 @@ class CartViewSet(viewsets.ModelViewSet):
         reservations = []
         try:
             with transaction.atomic():
-                # lock products referenced by the cart
+                # lock products and variants referenced by the cart
                 product_ids = [ci.product_id for ci in cart.items.all()]
-                from catalog.models import Product
+                variant_ids = [ci.variant_id for ci in cart.items.all() if getattr(ci, 'variant_id', None)]
+                from catalog.models import Product, ProductVariant
                 products_qs = Product.objects.select_for_update().filter(id__in=product_ids)
-                locked = {p.id: p for p in products_qs}
+                locked_products = {p.id: p for p in products_qs}
+                locked_variants = {}
+                if variant_ids:
+                    variants_qs = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
+                    locked_variants = {v.id: v for v in variants_qs}
 
-                for ci in cart.items.select_related('product'):
-                    p = locked.get(ci.product_id)
-                    if p is None:
-                        raise ValueError('Product not available')
-                    if p.inventory < ci.quantity and not p.allow_backorder:
-                        raise ValueError(f'Not enough inventory for {p.slug}')
-                    # decrement inventory and persist
-                    p.inventory = p.inventory - ci.quantity
-                    p.save()
-                    r = StockReservation.objects.create(
-                        product=p,
-                        quantity=ci.quantity,
-                        owner_type='cart',
-                        owner_id=str(cart.id),
-                        status='active',
-                    )
-                    reservations.append(r)
+                for ci in cart.items.select_related('product', 'variant'):
+                    # If item references a variant, operate on variant inventory
+                    if getattr(ci, 'variant_id', None):
+                        v = locked_variants.get(ci.variant_id)
+                        if v is None:
+                            raise ValueError('Variant not available')
+                        if v.inventory < ci.quantity:
+                            raise ValueError(f'Not enough inventory for {v.sku}')
+                        v.inventory = v.inventory - ci.quantity
+                        v.save()
+                        r = StockReservation.objects.create(
+                            product=v.product,
+                            variant=v,
+                            quantity=ci.quantity,
+                            owner_type='cart',
+                            owner_id=str(cart.id),
+                            status='active',
+                        )
+                        reservations.append(r)
+                    else:
+                        p = locked_products.get(ci.product_id)
+                        if p is None:
+                            raise ValueError('Product not available')
+                        if p.inventory < ci.quantity and not p.allow_backorder:
+                            raise ValueError(f'Not enough inventory for {p.slug}')
+                        # decrement inventory and persist
+                        p.inventory = p.inventory - ci.quantity
+                        p.save()
+                        r = StockReservation.objects.create(
+                            product=p,
+                            quantity=ci.quantity,
+                            owner_type='cart',
+                            owner_id=str(cart.id),
+                            status='active',
+                        )
+                        reservations.append(r)
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'reservations': [r.id for r in reservations]}, status=status.HTTP_201_CREATED)
