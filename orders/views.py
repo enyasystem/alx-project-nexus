@@ -35,9 +35,10 @@ class CartViewSet(viewsets.ModelViewSet):
         ci = serializer.save(cart=cart)
         return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
 
-    # Attach schema with examples for add-item
+    # Attach schema with examples for add-item (requests and responses)
     add_item = extend_schema(
-        request=None,
+        summary='Add an item to the cart',
+        description='Add a product or product variant to the cart. Supply `product` and optional `variant` and `quantity`.',
         examples=[
             OpenApiExample(
                 'Add product (no variant)',
@@ -48,6 +49,23 @@ class CartViewSet(viewsets.ModelViewSet):
                 'Add product variant',
                 value={'product': 1, 'variant': 5, 'quantity': 1},
                 request_only=True
+            ),
+            OpenApiExample(
+                'Add item response',
+                value={
+                    'id': 10,
+                    'user': None,
+                    'created_at': '2025-10-03T12:00:00Z',
+                    'items': [
+                        {
+                            'id': 1,
+                            'product': 1,
+                            'variant': 5,
+                            'quantity': 1
+                        }
+                    ]
+                },
+                response_only=True
             ),
         ]
     )(add_item)
@@ -117,10 +135,11 @@ class CartViewSet(viewsets.ModelViewSet):
         return Response({'reservations': [r.id for r in reservations]}, status=status.HTTP_201_CREATED)
 
     reserve = extend_schema(
-        request=None,
+        summary='Reserve stock for cart items',
         description='Reserve stock for all items in the cart. If items include a `variant` id, reservation will apply to the variant SKU.',
         examples=[
             OpenApiExample('Reserve', value={}, request_only=True),
+            OpenApiExample('Reserve response', value={'reservations': [42, 43]}, response_only=True),
         ]
     )(reserve)
 
@@ -164,8 +183,33 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='create-from-cart')
     @extend_schema(
-        description="Create an order from an existing cart. Use 'Idempotency-Key' header to avoid duplicates.",
-        examples=[OpenApiExample('Create order', value={'cart_id': 1}, request_only=True)]
+        description=(
+            "Create an order from an existing cart. Use the 'Idempotency-Key' header to avoid duplicate creations. "
+            "Pass a JSON body with the `cart_id`. The response will contain the created order and its items; when items use variants the `variant_sku` field will be populated."
+        ),
+        examples=[
+            OpenApiExample('Create order request', value={'cart_id': 1}, request_only=True),
+            OpenApiExample(
+                'Create order response',
+                value={
+                    'id': 123,
+                    'user': None,
+                    'status': 'pending',
+                    'total_cents': 2500,
+                    'created_at': '2025-10-03T12:00:00Z',
+                    'items': [
+                        {
+                            'product_name': 'Book A',
+                            'product_slug': 'book-a',
+                            'unit_price_cents': 1300,
+                            'quantity': 1,
+                            'variant_sku': 'BOOK-A-RED'
+                        }
+                    ]
+                },
+                response_only=True
+            ),
+        ]
     )
     def create_from_cart(self, request):
         cart_id = request.data.get('cart_id')
@@ -195,6 +239,14 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(order=order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    create_shipment = extend_schema(
+        summary='Create a shipment for an order (admin only)',
+        description='Create a shipment record attached to the order. Requires admin privileges.',
+        examples=[
+            OpenApiExample('Create shipment request', value={'carrier': 'DHL', 'tracking_number': 'ABC123'}, request_only=True),
+            OpenApiExample('Create shipment response', value={'id': 9, 'order': 1, 'address': None, 'carrier': 'DHL', 'tracking_number': 'ABC123', 'status': 'pending', 'created_at': '2025-10-03T12:00:00Z'}, response_only=True),
+        ]
+    )(create_shipment)
     @action(detail=False, methods=['post'], url_path='webhook', permission_classes=[permissions.AllowAny])
     def webhook(self, request):
         # Placeholder for payment gateway webhooks (stripe, paypal, etc.)
