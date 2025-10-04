@@ -225,7 +225,15 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Project Nexus API',
     'DESCRIPTION': 'E-Commerce Backend APIs',
     'VERSION': '0.1.0',
-}
+        'DESCRIPTION': (
+            'Project Nexus is a modern ecommerce backend built with Django and Django REST Framework. '
+            'It supports product catalog management, carts, orders, inventory reservations, variant SKUs, '
+            'shipping, payments, and admin operations. The API is designed for extensibility, transactional safety, '
+            'and real-world commerce workflows.'
+        ),
+        'VERSION': '1.0.0',
+        'SERVE_INCLUDE_SCHEMA': False,
+    }
 
 # Expose JWT bearer auth in the OpenAPI schema so Swagger UI can send tokens
 SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
