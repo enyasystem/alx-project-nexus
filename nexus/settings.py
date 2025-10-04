@@ -222,18 +222,113 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Project Nexus API',
-    'DESCRIPTION': 'E-Commerce Backend APIs',
-    'VERSION': '0.1.0',
-        'DESCRIPTION': (
-            'Project Nexus is a modern ecommerce backend built with Django and Django REST Framework. '
-            'It supports product catalog management, carts, orders, inventory reservations, variant SKUs, '
-            'shipping, payments, and admin operations. The API is designed for extensibility, transactional safety, '
-            'and real-world commerce workflows.'
-        ),
-        'VERSION': '1.0.0',
-        'SERVE_INCLUDE_SCHEMA': False,
+    'TITLE': '🚀 Project Nexus API',
+    'DESCRIPTION': (
+        '<style>'
+        '@keyframes cardHover {'
+        '  0% { transform: translateY(0); }'
+        '  100% { transform: translateY(-10px); }'
+        '}'
+        '.feature-card {'
+        '  flex: 1 1 250px;'
+        '  padding: 1.5rem;'
+        '  background: white;'
+        '  border-radius: 12px;'
+        '  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);'
+        '  transition: all 0.3s ease;'
+        '  border: 1px solid rgba(0, 0, 0, 0.05);'
+        '}'
+        '.feature-card:hover {'
+        '  animation: cardHover 0.3s forwards;'
+        '  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);'
+        '  border-color: #6366f1;'
+        '}'
+        '.feature-icon {'
+        '  font-size: 2rem;'
+        '  margin-bottom: 1rem;'
+        '  display: block;'
+        '}'
+        '.feature-title {'
+        '  color: #2d3748;'
+        '  font-size: 1.25rem;'
+        '  font-weight: 600;'
+        '  margin: 0.5rem 0;'
+        '}'
+        '.feature-description {'
+        '  color: #4a5568;'
+        '  font-size: 0.875rem;'
+        '  line-height: 1.5;'
+        '}'
+        '</style>'
+        '<div style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;">'
+        '<div style="display: flex; align-items: center; gap: 3rem; margin-bottom: 3rem; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); padding: 3rem; border-radius: 16px; color: white;">'
+        '<img src="https://via.placeholder.com/150x150?text=Project+Nexus" style="border-radius: 16px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);">'
+        '<div>'
+        '<h1 style="margin: 0 0 1rem 0; color: white; font-size: 2.5rem; font-weight: 700;">Welcome to Project Nexus! 🌟</h1>'
+        '<p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 1.25rem; font-weight: 400;">Your next-generation ecommerce solution</p>'
+        '</div>'
+        '</div>'
+        
+        '<div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">'
+        '<h2 style="color: #2d3748; margin-top: 0;">About</h2>'
+        '<p style="color: #4a5568;">Project Nexus is a modern ecommerce backend built with Django and Django REST Framework. '
+        'Designed for scalability and real-world commerce, our API powers next-generation shopping experiences.</p>'
+        
+        '<h2 style="color: #2d3748; font-size: 2rem; font-weight: 700; margin: 2rem 0;">Key Features ✨</h2>'
+        '<div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin: 1.5rem 0;">'
+        '<div class="feature-card">'
+        '<span class="feature-icon">📦</span>'
+        '<h3 class="feature-title">Product Catalog</h3>'
+        '<p class="feature-description">Advanced variant SKU system with complete product management and categorization capabilities.</p>'
+        '</div>'
+        '<div class="feature-card">'
+        '<span class="feature-icon">🛒</span>'
+        '<h3 class="feature-title">Smart Cart</h3>'
+        '<p class="feature-description">Intelligent cart management with real-time inventory checks and price calculations.</p>'
+        '</div>'
+        '<div class="feature-card">'
+        '<span class="feature-icon">📋</span>'
+        '<h3 class="feature-title">Order Processing</h3>'
+        '<p class="feature-description">Streamlined order workflow with advanced inventory control and status tracking.</p>'
+        '</div>'
+        '<div class="feature-card">'
+        '<span class="feature-icon">🚢</span>'
+        '<h3 class="feature-title">Shipping</h3>'
+        '<p class="feature-description">Ready-to-integrate shipping system with multiple carrier support and rate calculations.</p>'
+        '</div>'
+        '<div class="feature-card">'
+        '<span class="feature-icon">💳</span>'
+        '<h3 class="feature-title">Payments</h3>'
+        '<p class="feature-description">Secure payment processing with support for multiple payment gateways and currencies.</p>'
+        '</div>'
+        '<div class="feature-card">'
+        '<span class="feature-icon">🔒</span>'
+        '<h3 class="feature-title">Admin</h3>'
+        '<p class="feature-description">Comprehensive admin interface with role-based access control and audit logs.</p>'
+        '</div>'
+        '</div>'
+        
+        '<div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border-radius: 16px; color: white;">'
+        '<h2 style="color: white; margin-top: 0; font-size: 2rem; font-weight: 700;">Getting Started 🚀</h2>'
+        '<p style="color: rgba(255, 255, 255, 0.9); font-size: 1.1rem; line-height: 1.6; margin: 1rem 0 0 0;">'
+        'Dive into our comprehensive API documentation below. Each endpoint is thoroughly documented with examples and guides. '
+        'Need assistance? Look for the detailed descriptions and try out the interactive endpoints.'
+        '</p>'
+        '</div>'
+        '</div>'
+        '</div>'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+        'defaultModelsExpandDepth': 3,
+        'defaultModelExpandDepth': 3,
+        'docExpansion': 'list',
     }
+}
 
 # Expose JWT bearer auth in the OpenAPI schema so Swagger UI can send tokens
 SPECTACULAR_SETTINGS.setdefault('COMPONENTS', {})
