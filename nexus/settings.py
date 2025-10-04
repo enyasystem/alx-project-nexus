@@ -111,6 +111,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# During development, also search the app static folders so runserver serves them
+STATICFILES_DIRS = [
+    BASE_DIR / 'nexus' / 'static',
+]
 # Use WhiteNoise to serve static files in production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -222,49 +226,14 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': '🚀 Project Nexus API',
+    'TITLE': 'Project Nexus API - Enya Elvis',
     'DESCRIPTION': (
-        '<style>'
-        '@keyframes cardHover {'
-        '  0% { transform: translateY(0); }'
-        '  100% { transform: translateY(-10px); }'
-        '}'
-        '.feature-card {'
-        '  flex: 1 1 250px;'
-        '  padding: 1.5rem;'
-        '  background: white;'
-        '  border-radius: 12px;'
-        '  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);'
-        '  transition: all 0.3s ease;'
-        '  border: 1px solid rgba(0, 0, 0, 0.05);'
-        '}'
-        '.feature-card:hover {'
-        '  animation: cardHover 0.3s forwards;'
-        '  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);'
-        '  border-color: #6366f1;'
-        '}'
-        '.feature-icon {'
-        '  font-size: 2rem;'
-        '  margin-bottom: 1rem;'
-        '  display: block;'
-        '}'
-        '.feature-title {'
-        '  color: #2d3748;'
-        '  font-size: 1.25rem;'
-        '  font-weight: 600;'
-        '  margin: 0.5rem 0;'
-        '}'
-        '.feature-description {'
-        '  color: #4a5568;'
-        '  font-size: 0.875rem;'
-        '  line-height: 1.5;'
-        '}'
-        '</style>'
+        # NOTE: moved styling into Swagger UI customCss to allow Bootstrap usage
         '<div style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;">'
         '<div style="display: flex; align-items: center; gap: 3rem; margin-bottom: 3rem; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); padding: 3rem; border-radius: 16px; color: white;">'
-        '<img src="https://via.placeholder.com/150x150?text=Project+Nexus" style="border-radius: 16px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);">'
+    '<img src="/static/nexus/project_nexus_logo.png?v=1759557415" style="border-radius: 16px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); height:96px; width:96px; object-fit:cover;">'
         '<div>'
-        '<h1 style="margin: 0 0 1rem 0; color: white; font-size: 2.5rem; font-weight: 700;">Welcome to Project Nexus! 🌟</h1>'
+        '<h1 style="margin: 0 0 1rem 0; color: white; font-size: 2.5rem; font-weight: 700;">Welcome to Project Nexus</h1>'
         '<p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 1.25rem; font-weight: 400;">Your next-generation ecommerce solution</p>'
         '</div>'
         '</div>'
@@ -274,44 +243,23 @@ SPECTACULAR_SETTINGS = {
         '<p style="color: #4a5568;">Project Nexus is a modern ecommerce backend built with Django and Django REST Framework. '
         'Designed for scalability and real-world commerce, our API powers next-generation shopping experiences.</p>'
         
-        '<h2 style="color: #2d3748; font-size: 2rem; font-weight: 700; margin: 2rem 0;">Key Features ✨</h2>'
-        '<div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin: 1.5rem 0;">'
-        '<div class="feature-card">'
-        '<span class="feature-icon">📦</span>'
-        '<h3 class="feature-title">Product Catalog</h3>'
-        '<p class="feature-description">Advanced variant SKU system with complete product management and categorization capabilities.</p>'
-        '</div>'
-        '<div class="feature-card">'
-        '<span class="feature-icon">🛒</span>'
-        '<h3 class="feature-title">Smart Cart</h3>'
-        '<p class="feature-description">Intelligent cart management with real-time inventory checks and price calculations.</p>'
-        '</div>'
-        '<div class="feature-card">'
-        '<span class="feature-icon">📋</span>'
-        '<h3 class="feature-title">Order Processing</h3>'
-        '<p class="feature-description">Streamlined order workflow with advanced inventory control and status tracking.</p>'
-        '</div>'
-        '<div class="feature-card">'
-        '<span class="feature-icon">🚢</span>'
-        '<h3 class="feature-title">Shipping</h3>'
-        '<p class="feature-description">Ready-to-integrate shipping system with multiple carrier support and rate calculations.</p>'
-        '</div>'
-        '<div class="feature-card">'
-        '<span class="feature-icon">💳</span>'
-        '<h3 class="feature-title">Payments</h3>'
-        '<p class="feature-description">Secure payment processing with support for multiple payment gateways and currencies.</p>'
-        '</div>'
-        '<div class="feature-card">'
-        '<span class="feature-icon">🔒</span>'
-        '<h3 class="feature-title">Admin</h3>'
-        '<p class="feature-description">Comprehensive admin interface with role-based access control and audit logs.</p>'
-        '</div>'
+    '<h2 style="color: #2d3748; font-size: 2rem; font-weight: 700; margin: 2rem 0; text-align: center;">Key Features</h2>'
+    # Compact list of features (minimal spacing)
+        '<div class="container" style="max-width:900px;margin:0 auto;padding:0 1rem;">'
+        '<ul class="features-list" style="list-style:none;padding:0;margin:0;">'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Product Catalog</strong> <span class="feature-emoji">📦</span> — Advanced variant SKU system with complete product management and categorization capabilities.</li>'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Smart Cart</strong> <span class="feature-emoji">🛒</span> — Intelligent cart management with real-time inventory checks and price calculations.</li>'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Order Processing</strong> <span class="feature-emoji">📋</span> — Streamlined order workflow with advanced inventory control and status tracking.</li>'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Shipping</strong> <span class="feature-emoji">🚢</span> — Ready-to-integrate shipping system with multiple carrier support and rate calculations.</li>'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Payments</strong> <span class="feature-emoji">💳</span> — Secure payment processing with support for multiple payment gateways and currencies.</li>'
+            '<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);"><strong>Admin</strong> <span class="feature-emoji">🔒</span> — Comprehensive admin interface with role-based access control and audit logs.</li>'
+        '</ul>'
         '</div>'
         
         '<div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border-radius: 16px; color: white;">'
         '<h2 style="color: white; margin-top: 0; font-size: 2rem; font-weight: 700;">Getting Started 🚀</h2>'
         '<p style="color: rgba(255, 255, 255, 0.9); font-size: 1.1rem; line-height: 1.6; margin: 1rem 0 0 0;">'
-        'Dive into our comprehensive API documentation below. Each endpoint is thoroughly documented with examples and guides. '
+        'Dive into the comprehensive API documentation below. Each endpoint is thoroughly documented with examples and guides. '
         'Need assistance? Look for the detailed descriptions and try out the interactive endpoints.'
         '</p>'
         '</div>'
@@ -327,6 +275,20 @@ SPECTACULAR_SETTINGS = {
         'defaultModelsExpandDepth': 3,
         'defaultModelExpandDepth': 3,
         'docExpansion': 'list',
+        'customCss': (
+            "@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');\n"
+            "/* Fallback grid & card styles: applied if Bootstrap doesn't load or is blocked.\n"
+            "   These rules target the same classes used in the DESCRIPTION markup so cards appear side-by-side. */\n"
+            ".swagger-ui .container{max-width:1200px;margin:0 auto;padding:0 1rem;}\n"
+            ".swagger-ui .container{max-width:900px;margin:0 auto;padding:0 1rem;}\n"
+            "/* Compact features list styles */\n"
+            ".swagger-ui .features-list{list-style:none;padding:0;margin:0;color:#2d3748;font-size:0.98rem;}\n"
+            ".swagger-ui .features-list li{padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);}\n"
+            ".swagger-ui .features-list li strong{font-weight:600;margin-right:0.5rem;}\n"
+            ".swagger-ui .feature-emoji{margin-left:0.5rem;font-size:0.98em;vertical-align:middle;}\n"
+            "/* Constrain header logo so it doesn't cover the page */\n"
+            "img[src*='project_nexus_logo']{max-width:120px !important;max-height:120px !important;width:auto !important;height:auto !important;display:inline-block !important;border-radius:16px !important;}\n"
+        ),
     }
 }
 
