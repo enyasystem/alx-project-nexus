@@ -7,17 +7,25 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
-from .serializers import UserSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer
+from accounts.serializers import UserSerializer, PasswordResetRequestSerializer, SetNewPasswordSerializer
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, OpenApiParameter
 
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        request=UserSerializer,
+        responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='User created (inactive)')},
+        description='Create a new user account. An email verification will be sent to activate the account.'
+    )
 
     def perform_create(self, serializer):
         # create inactive user and send verification email
@@ -43,6 +51,15 @@ class RegisterView(generics.CreateAPIView):
 
 class VerifyEmailView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter('uid', OpenApiTypes.STR, OpenApiParameter.QUERY, description='Base64 encoded user id'),
+            OpenApiParameter('token', OpenApiTypes.STR, OpenApiParameter.QUERY, description='Verification token'),
+        ],
+        responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Email verified')},
+        description='Verify an emailed token to activate a newly-registered account.'
+    )
 
     def get(self, request, *args, **kwargs):
         uid = request.GET.get('uid')
