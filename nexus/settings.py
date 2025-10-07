@@ -17,7 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # to a secure, random 50+ character string via environment/secret manager.
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-placeholder-key')
 
-DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 import dj_database_url
 
 # DATABASE_URL support (Render provides DATABASE_URL). If not present, fall back
@@ -39,7 +38,6 @@ else:
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-    'orders',
 
 def _bool_env(name, default=False):
     v = os.getenv(name)
@@ -85,22 +83,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nexus.wsgi.application'
 
-# Database
-DATABASES = {}
-if os.getenv('POSTGRES_HOST'):
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('POSTGRES_DB', 'nexus'),
-        'USER': os.getenv('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
-    }
-else:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+# Installed apps
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_spectacular',
+    'django_filters',
+    'catalog',
+    'accounts',
+    'orders',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
