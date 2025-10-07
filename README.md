@@ -60,9 +60,73 @@ GitHub Repository: **alx-project-nexus**
 
 The project is deployed and publicly available at:
 
-https://alx-project-nexus-57m5.onrender.com/
+https://alx-project-nexus-gkqz.onrender.com/
 
-Open the admin at https://alx-project-nexus-57m5.onrender.com/admin/ (use the admin credentials configured in the Render service environment variables).
+Open the admin at https://alx-project-nexus-gkqz.onrender.com/admin/ (use the default (admin/password) admin credentials configured in the Render service environment variables).
+
+## Deploying to Render (quick runbook)
+
+Follow these steps to deploy and verify the site on Render. This is the minimal, repeatable runbook we used during development.
+
+1) Provision Managed Postgres on Render
+- Create a managed Postgres instance via Render Dashboard → Databases. Note the connection string (Render provides it as a URI).
+
+2) Add environment variables to your Render service
+- In Render Dashboard → Services → your service → Environment, set the following variables (do not commit secrets to git):
+  - DATABASE_URL = postgresql://<user>:<password>@<host>:<port>/<dbname>
+  - DJANGO_SECRET_KEY = <very-long-random-secret>
+  - DJANGO_ALLOWED_HOSTS = alx-project-nexus-gkqz.onrender.com
+  - ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD = (optional; used by scripts/create_admin_if_missing.py)
+  - MEDIA_URL = https://<your-supabase-project>.supabase.co/storage/v1/object/public/<bucket>/  # if using Supabase public bucket
+  - USE_S3 = 0  # make sure S3 logic is disabled unless using S3
+
+3) Deploy and run migrations
+```powershell
+# in your local shell (optional): set DATABASE_URL to the Render DB and run migrations
+# $env:DATABASE_URL = "postgresql://..."
+# .\venv\Scripts\python.exe manage.py migrate --noinput
+```
+
+4) Load data (fixtures)
+- We recommend using the bulk loader for large JSON fixtures (faster over remote DB):
+```powershell
+# $env:DATABASE_URL = "postgresql://..."  # Render DB
+.\venv\Scripts\python.exe scripts\bulk_load_fixtures.py fixtures\catalog.utf8.json
+```
+
+5) Create admin (if not set via env)
+```powershell
+# $env:DATABASE_URL = "postgresql://..."
+$env:ADMIN_USERNAME = "admin"
+$env:ADMIN_EMAIL = "you@example.com"
+$env:ADMIN_PASSWORD = "VeryStrongPasswordHere"
+.\venv\Scripts\python.exe scripts\create_admin_if_missing.py
+```
+
+6) Media: use Supabase (no AWS credit card required)
+- We include `scripts/upload_media_to_supabase.py` to upload `mediafiles/` preserving paths. After uploading, set `MEDIA_URL` on Render to the Supabase public prefix (ends with a trailing slash):
+
+  MEDIA_URL = https://<your-project>.supabase.co/storage/v1/object/public/<bucket>/
+
+- Example upload (local):
+```powershell
+$env:SUPABASE_URL = "https://<your-project>.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY = "<service-role-key>"  # keep secret
+.\venv\Scripts\python.exe scripts\upload_media_to_supabase.py --bucket media --local-dir mediafiles
+```
+
+7) Redeploy the Render service (or Restart) so environment variables take effect.
+
+8) Verify
+- Open the admin at /admin/, inspect a product — the image thumbnails should now point to your Supabase MEDIA_URL and load.
+- If the admin still shows `/media/...` URLs, ensure `MEDIA_URL` is set in the Render service environment and that you redeployed.
+
+Rollback & Backups
+- Use Render's database backup feature (Snapshots) before running irreversible changes. If needed, restore from the snapshot via the Render dashboard.
+
+Notes
+- The repo includes `scripts/bulk_load_fixtures.py` and `scripts/upload_media_to_supabase.py` to help with data + media migration. Both are intended to be run from a trusted local machine (they require DB or Supabase keys).
+- For production, prefer private buckets + signed URLs or a CDN (CloudFront/Cloudflare) in front of Supabase.
 
 ## Getting started (local dev)
 
