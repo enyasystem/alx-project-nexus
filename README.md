@@ -62,7 +62,7 @@ The project is deployed and publicly available at:
 
 https://alx-project-nexus-gkqz.onrender.com/
 
-Open the admin at https://alx-project-nexus-gkqz.onrender.com/admin/ (use the default (admin/password) admin credentials configured in the Render service environment variables).
+Open the admin at https://alx-project-nexus-gkqz.onrender.com/admin/ (use the default - (admin/password) admin credentials configured in the Render service environment variables).
 
 ## Deploying to Render (quick runbook)
 
@@ -74,7 +74,7 @@ Follow these steps to deploy and verify the site on Render. This is the minimal,
 2) Add environment variables to your Render service
 - In Render Dashboard → Services → your service → Environment, set the following variables (do not commit secrets to git):
   - DATABASE_URL = postgresql://<user>:<password>@<host>:<port>/<dbname>
-  - DJANGO_SECRET_KEY = <very-long-random-secret>
+  - DJANGO_SECRET_KEY = **********
   - DJANGO_ALLOWED_HOSTS = alx-project-nexus-gkqz.onrender.com
   - ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD = (optional; used by scripts/create_admin_if_missing.py)
   - MEDIA_URL = https://<your-supabase-project>.supabase.co/storage/v1/object/public/<bucket>/  # if using Supabase public bucket
@@ -98,8 +98,8 @@ Follow these steps to deploy and verify the site on Render. This is the minimal,
 ```powershell
 # $env:DATABASE_URL = "postgresql://..."
 $env:ADMIN_USERNAME = "admin"
-$env:ADMIN_EMAIL = "you@example.com"
-$env:ADMIN_PASSWORD = "VeryStrongPasswordHere"
+$env:ADMIN_EMAIL = "example@email.com"
+$env:ADMIN_PASSWORD = "*****"
 .\venv\Scripts\python.exe scripts\create_admin_if_missing.py
 ```
 
