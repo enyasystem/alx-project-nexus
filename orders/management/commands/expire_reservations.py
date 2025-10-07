@@ -25,4 +25,3 @@ class Command(BaseCommand):
             except Exception as exc:
                 self.stderr.write(f'Failed to release reservation {r.id}: {exc}')
         self.stdout.write(f'Released {released} reservations.')
-\n

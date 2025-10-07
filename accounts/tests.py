@@ -65,4 +65,3 @@ class AuthTests(TestCase):
 		resp = self.client.get(self.hello_url)
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 		self.assertIn('message', resp.data)
-\n

@@ -149,4 +149,3 @@ class OrdersTestCase(TestCase):
             # require that at least one error mentions 'locked' (SQLite locking)
             self.assertTrue(any('lock' in e[2].lower() for e in errors), f"Expected lock errors, got {errors}")
             self.assertEqual(v.inventory, 1)
-\n

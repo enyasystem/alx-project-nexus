@@ -29,4 +29,3 @@ class StockReservationAdmin(admin.ModelAdmin):
 class ShipmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'status', 'carrier', 'tracking_number', 'created_at')
     list_filter = ('status',)
-\n

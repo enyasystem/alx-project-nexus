@@ -30,4 +30,3 @@ class SetNewPasswordSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         # add password validation hooks here if needed
         return value
-\n

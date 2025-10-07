@@ -7,4 +7,3 @@ class ProductCursorPagination(CursorPagination):
     # with previous LimitOffset clients/tests)
     page_size_query_param = 'limit'
     ordering = '-created_at'
-\n

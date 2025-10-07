@@ -15,4 +15,3 @@ for dirpath,dirnames,filenames in os.walk(root):
             except Exception:
                 pass
 print('\n'.join(missing))
-\n

@@ -187,4 +187,3 @@ class CatalogTests(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # ensure image field present in response (may be URL or null)
         self.assertIn('image', resp.data)
-\n

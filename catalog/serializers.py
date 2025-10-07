@@ -24,4 +24,3 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_variants(self, obj):
         return [{'id': v.id, 'sku': v.sku, 'name': v.name, 'price': str(v.price) if v.price is not None else None, 'inventory': v.inventory, 'attributes': v.attributes} for v in obj.variants.all()]
-\n

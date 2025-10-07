@@ -50,4 +50,3 @@ def clear_product_cache_on_delete(sender, instance, **kwargs):
             cache.delete(_product_list_key_for_request_path('/api/products/'))
     except Exception:
         pass
-\n

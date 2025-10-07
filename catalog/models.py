@@ -58,4 +58,3 @@ class ProductVariant(models.Model):
             models.Index(fields=['product']),
         ]
         ordering = ['sku']
-\n

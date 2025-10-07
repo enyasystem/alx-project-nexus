@@ -78,4 +78,3 @@ class Command(BaseCommand):
         total_cats = Category.objects.count()
         total_prods = Product.objects.count()
         self.stdout.write(self.style.SUCCESS(f'Seeding complete. Categories: {total_cats}, Products: {total_prods}'))
-\n

@@ -170,4 +170,3 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f"Shipment {self.id} for Order {self.order_id} ({self.status})"
-\n

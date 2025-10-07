@@ -7,4 +7,3 @@ router.register(r'cart-items', CartItemViewSet, basename='cartitem')
 router.register(r'orders', OrderViewSet, basename='order')
 
 urlpatterns = router.urls
-\n

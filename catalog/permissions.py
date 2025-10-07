@@ -14,4 +14,3 @@ class IsStaffOrReadOnly(permissions.BasePermission):
             return True
         # For write operations require staff status
         return bool(request.user and request.user.is_authenticated and request.user.is_staff)
-\n

@@ -113,4 +113,3 @@ class OrdersAPITestCase(TestCase):
         # create order from cart
         resp = self.client.post(reverse('order-create-from-cart'), {'cart_id': cart_id}, format='json')
         self.assertEqual(resp.status_code, 201)
-\n

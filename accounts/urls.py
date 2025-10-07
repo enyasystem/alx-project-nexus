@@ -14,4 +14,3 @@ urlpatterns = [
     path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('verify-email/', VerifyEmailView.as_view(), name='verify_email'),
 ]
-\n
