@@ -27,7 +27,9 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 0
     readonly_fields = ('image_tag',)
-    fields = ('image_tag', 'alt', 'order')
+    # Include the actual image field so existing images are rendered and
+    # new images can be uploaded/changed from the inline.
+    fields = ('image_tag', 'image', 'alt', 'order')
 
     def image_tag(self, obj):
         if obj.image:
@@ -44,7 +46,15 @@ ProductAdmin.inlines = (ProductImageInline,)
 
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'alt', 'order')
+    list_display = ('id', 'product', 'image_tag', 'alt', 'order')
+    readonly_fields = ('image_tag',)
+
+    def image_tag(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height:60px; max-width:100px; object-fit:cover;" />', obj.image.url)
+        return ''
+
+    image_tag.short_description = 'Image'
 
 
 @admin.register(ProductVariant)
