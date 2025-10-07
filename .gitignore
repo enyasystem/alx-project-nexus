@@ -20,3 +20,4 @@ media/
 frontend/
 DEADJOE
 .pre-commit-cache*
+.pre-commit-temp/
