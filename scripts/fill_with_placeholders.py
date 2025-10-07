@@ -41,7 +41,8 @@ def _download_placeholders(count=5, size=(800, 600)):
         filename = f'placeholder-{i+1}-{size[0]}x{size[1]}.jpg'
         target = PLACEHOLDER_DIR / filename
         if target.exists() and target.stat().st_size > 0:
-            downloaded.append(str(Path('products') / 'placeholders' / filename))
+            # store as POSIX path so Django builds correct URLs on all platforms
+            downloaded.append(str(Path('products') / 'placeholders' / filename).replace('\\', '/'))
             continue
 
         url = f'https://picsum.photos/{size[0]}/{size[1]}?random={i+1}'
@@ -50,7 +51,7 @@ def _download_placeholders(count=5, size=(800, 600)):
             resp.raise_for_status()
             with open(target, 'wb') as f:
                 f.write(resp.content)
-            downloaded.append(str(Path('products') / 'placeholders' / filename))
+                downloaded.append(str(Path('products') / 'placeholders' / filename).replace('\\', '/'))
             print('downloaded', filename)
         except Exception as e:
             print('failed to download', url, '->', e)
