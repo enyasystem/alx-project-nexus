@@ -70,4 +70,3 @@ class S3UploadTest(TestCase):
         # ensure object exists in the mocked bucket
         objs = self.s3.list_objects_v2(Bucket='test-bucket', Prefix=key)
         self.assertIn('Contents', objs)
-\n

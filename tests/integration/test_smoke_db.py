@@ -16,4 +16,3 @@ class SmokeDBTest(TestCase):
         resp = client.get('/api/health/' if hasattr(client, 'get') else '/')
         # Accept 200 or 404 depending on whether health endpoint exists
         self.assertIn(resp.status_code, (200, 404))
-\n

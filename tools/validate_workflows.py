@@ -27,4 +27,3 @@ if errors:
 else:
     print('\nAll workflow files parsed successfully')
     sys.exit(0)
-\n

@@ -71,4 +71,3 @@ class ProductImageUploadTest(TestCase):
         # get filename portion
         filename = os.path.basename(image_url)
         self.assertTrue(os.path.exists(os.path.join(media_root, 'products', filename)))
-\n
