@@ -117,4 +117,3 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
     run(dry_run=args.dry_run, count=args.count)
-\n

@@ -29,4 +29,3 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(_apply_trigram_indexes, _reverse_trigram_indexes),
     ]
-\n

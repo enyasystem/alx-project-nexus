@@ -13,4 +13,3 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['name'], name='catalog_pro_name_idx'),
         ),
     ]
-\n

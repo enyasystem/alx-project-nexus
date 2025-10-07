@@ -19,3 +19,4 @@ media/
 # Local artifacts to ignore
 frontend/
 DEADJOE
+.pre-commit-cache*

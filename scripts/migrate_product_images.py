@@ -25,4 +25,3 @@ def run(dry_run=True):
             ProductImage.objects.create(product=p, image=p.image.name, alt=p.name or '', order=0)
             created += 1
     print('done; created', created)
-\n
