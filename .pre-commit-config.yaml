@@ -12,4 +12,3 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--exclude-files", "docs/|tests/"]
-\n
