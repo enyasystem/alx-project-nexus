@@ -130,7 +130,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media settings for uploaded product images. Requires Pillow in the environment.
-MEDIA_URL = '/media/'
+# Allow MEDIA_URL to be set via environment (so hosted storage services like Supabase can be used)
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 # Optional S3 storage configuration (django-storages). To enable, set USE_S3=1 and provide
