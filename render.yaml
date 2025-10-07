@@ -66,3 +66,4 @@ databases:
 # 3) For CI, set values in GitHub Actions secrets (Settings -> Secrets -> Actions).
 # The DJANGO_SECRET_KEY above is intentionally a placeholder. Generate a key locally
 # (python -c "import secrets; print(secrets.token_urlsafe(50))") and paste it into Render UI.
+\n

@@ -68,3 +68,4 @@ class ProductImageAdmin(admin.ModelAdmin):
 class ProductVariantAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'sku', 'name', 'price', 'inventory')
     search_fields = ('sku', 'name')
+\n

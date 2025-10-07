@@ -55,3 +55,4 @@ Rotation log (performed during purge)
 Verification
 
 - CI run after rotation: pending manual trigger (run integration workflow to confirm)
+\n

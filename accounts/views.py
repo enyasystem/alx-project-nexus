@@ -151,3 +151,4 @@ class ProtectedHelloView(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return Response({'message': f'Hello, {request.user.username}'})
+\n

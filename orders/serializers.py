@@ -191,3 +191,4 @@ def create_order_from_cart(cart, user=None):
         order.total_cents = total
         order.save()
         return order
+\n

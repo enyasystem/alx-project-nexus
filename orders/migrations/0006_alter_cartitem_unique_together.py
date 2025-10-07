@@ -16,3 +16,4 @@ class Migration(migrations.Migration):
             unique_together={('cart', 'product', 'variant')},
         ),
     ]
+\n

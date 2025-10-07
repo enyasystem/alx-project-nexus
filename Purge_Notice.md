@@ -25,3 +25,4 @@ Steps for contributors (post-purge):
 If you have any questions or need assistance, reply to this message or contact [owner/contact].
 
 Thank you for your cooperation.
+\n

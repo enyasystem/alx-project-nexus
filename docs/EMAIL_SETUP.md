@@ -69,3 +69,4 @@ If the SMTP backend is configured and reachable, the function will return the nu
 ## Optional: Use transactional email API SDKs
 - For better deliverability and features (templates, tracking), use provider SDKs (SendGrid, Mailgun) with HTTP APIs instead of SMTP. That requires adding provider-specific client libraries and wiring them into a custom Django email backend or sending via the provider's SDK from your view/queue tasks.
 
+\n

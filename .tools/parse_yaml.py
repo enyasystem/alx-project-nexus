@@ -8,3 +8,4 @@ with open(p,'r',encoding='utf-8') as f:
     except Exception as e:
         print('YAML parse error:',e)
         sys.exit(1)
+\n

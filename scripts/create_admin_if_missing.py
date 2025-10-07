@@ -31,3 +31,4 @@ else:
     else:
         User.objects.create_superuser(username=username, email=email, password=password)
         print(f'Created admin user "{username}"')
+\n

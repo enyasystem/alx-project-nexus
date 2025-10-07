@@ -19,3 +19,4 @@ class PasswordResetTests(TestCase):
         url = reverse('password_reset_confirm')
         resp = self.client.post(url, {'uid': 'bad', 'token': 'bad', 'new_password': 'newpass123'}, format='json')
         self.assertEqual(resp.status_code, 400)
+\n

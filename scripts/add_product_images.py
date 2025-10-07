@@ -94,3 +94,4 @@ def attach_images(count=200, force=False, dry_run=True):
 if __name__ == '__main__':
     # allow running the script directly for small quick tests (not recommended for large runs)
     attach_images(count=50, force=False, dry_run=True)
+\n

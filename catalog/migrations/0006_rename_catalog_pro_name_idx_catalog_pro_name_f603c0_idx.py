@@ -16,3 +16,4 @@ class Migration(migrations.Migration):
             old_name='catalog_pro_name_idx',
         ),
     ]
+\n

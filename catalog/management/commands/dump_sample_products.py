@@ -23,3 +23,4 @@ class Command(BaseCommand):
             ],
         }
         self.stdout.write(json.dumps(data, indent=2))
+\n

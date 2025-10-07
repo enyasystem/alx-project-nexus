@@ -395,3 +395,4 @@ Notes
 
 - Managed Postgres offerings (RDS, Cloud SQL, etc.) often allow enabling common extensions via their UI or require running `CREATE EXTENSION` as the master user. Consult your provider docs.
 - If you cannot enable extensions, the migration will skip index creation (the migration is guarded) but search performance will not benefit from trigram indexing.
+\n

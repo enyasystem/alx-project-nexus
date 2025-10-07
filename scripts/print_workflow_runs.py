@@ -15,3 +15,4 @@ if not runs:
 
 for r in runs[:10]:
     print(f"id={r.get('id')}	run_number={r.get('run_number')}	head_sha={r.get('head_sha')}	status={r.get('status')}	conclusion={r.get('conclusion')}	event={r.get('event')}	created_at={r.get('created_at')}")
+\n

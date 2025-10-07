@@ -11,3 +11,4 @@ POSTGRES_PASSWORD=REDACTED_PASSWORD
 secrets.json
 **/secrets.yml
 **/credentials.txt
+\n

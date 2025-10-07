@@ -84,3 +84,4 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['product'], name='catalog_pro_product_460665_idx'),
         ),
     ]
+\n

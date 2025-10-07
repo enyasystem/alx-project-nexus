@@ -1,0 +1,92 @@
+### version information
+
+```
+pre-commit version: 4.3.0
+git --version: git version 2.51.0.windows.2
+sys.version:
+    3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]
+sys.executable: C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Scripts\python.exe
+os.name: nt
+sys.platform: win32
+```
+
+### error information
+
+```
+An unexpected error has occurred: PermissionError: [WinError 5] Access is denied: 'C:\\Users\\Enya Elvis E\\Documents\\Projects\\alx-project-nexus\\.pre-commit-cache\\repowbg2zj99\\py_env-python3.11\\Scripts\\python.exe'
+```
+
+```
+Traceback (most recent call last):
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 31, in clean_path_on_failure
+    yield
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\repository.py", line 85, in _hook_install
+    lang.install_environment(
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\languages\python.py", line 226, in install_environment
+    cmd_output_b(*venv_cmd, cwd='/')
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 111, in cmd_output_b
+    raise CalledProcessError(returncode, cmd, stdout_b, stderr_b)
+pre_commit.util.CalledProcessError: command: ('C:\\Users\\Enya Elvis E\\Documents\\Projects\\alx-project-nexus\\venv\\Scripts\\python.exe', '-mvirtualenv', 'C:\\Users\\Enya Elvis E\\Documents\\Projects\\alx-project-nexus\\.pre-commit-cache\\repowbg2zj99\\py_env-python3.11')
+return code: 1
+stdout:
+    RuntimeError: failed to build image setuptools because:
+    Traceback (most recent call last):
+      File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\virtualenv\seed\embed\via_app_data\via_app_data.py", line 59, in _install
+        installer.install(creator.interpreter.version_info)
+      File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\virtualenv\seed\embed\via_app_data\pip_install\base.py", line 39, in install
+        self._sync(filename, into)
+      File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\virtualenv\seed\embed\via_app_data\pip_install\copy.py", line 13, in _sync
+        copy(src, dst)
+      File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\virtualenv\util\path\_sync.py", line 43, in copy
+        method(str(src), str(dest))
+      File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\virtualenv\util\path\_sync.py", line 54, in copytree
+        shutil.copy(src_f, dest_f)
+      File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 431, in copy
+        copyfile(src, dst, follow_symlinks=follow_symlinks)
+      File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 256, in copyfile
+        with open(src, 'rb') as fsrc:
+             ^^^^^^^^^^^^^^^
+    FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Enya Elvis E\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\LocalCache\\Local\\pypa\\virtualenv\\wheel\\3.11\\image\\1\\CopyPipInstall\\setuptools-80.9.0-py3-none-any\\pkg_resources\\tests\\data\\my-test-package_zipped-egg\\my_test_package-1.0-py3.7.egg'
+stderr: (none)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 632, in _rmtree_unsafe
+    os.unlink(fullname)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\Enya Elvis E\\Documents\\Projects\\alx-project-nexus\\.pre-commit-cache\\repowbg2zj99\\py_env-python3.11\\Scripts\\python.exe'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\error_handler.py", line 73, in error_handler
+    yield
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\main.py", line 417, in main
+    return run(args.config, store, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\commands\run.py", line 442, in run
+    install_hook_envs(to_install, store)
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\repository.py", line 229, in install_hook_envs
+    _hook_install(hook)
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\repository.py", line 84, in _hook_install
+    with clean_path_on_failure(venv):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 34, in clean_path_on_failure
+    rmtree(path)
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 231, in rmtree
+    shutil.rmtree(path, ignore_errors=False, onerror=_handle_readonly_old)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 787, in rmtree
+    return _rmtree_unsafe(path, onerror)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 629, in _rmtree_unsafe
+    _rmtree_unsafe(fullname, onerror)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\shutil.py", line 634, in _rmtree_unsafe
+    onerror(os.unlink, fullname, sys.exc_info())
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 228, in _handle_readonly_old
+    return _handle_readonly(func, path, excinfo[1])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Enya Elvis E\Documents\Projects\alx-project-nexus\venv\Lib\site-packages\pre_commit\util.py", line 217, in _handle_readonly
+    func(path)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\Enya Elvis E\\Documents\\Projects\\alx-project-nexus\\.pre-commit-cache\\repowbg2zj99\\py_env-python3.11\\Scripts\\python.exe'
+```

@@ -117,3 +117,4 @@ Contact
 - If you need help interpreting CI logs or fixing a failing preflight, attach the sanitized `docker-compose config` output (it will be included in the preflight logs when available) and I can help interpret it.
 
 End of document
+\n

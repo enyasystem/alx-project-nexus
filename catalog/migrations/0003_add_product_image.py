@@ -15,3 +15,4 @@ class Migration(migrations.Migration):
             field=models.ImageField(upload_to='products/', null=True, blank=True),
         ),
     ]
+\n

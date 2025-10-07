@@ -15,3 +15,4 @@ for job in j.get('jobs', []):
     started = job.get('started_at')
     completed = job.get('completed_at')
     print(f"{name}\t{status}\t{conclusion}\tstarted:{started}\tcompleted:{completed}")
+\n

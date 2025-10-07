@@ -34,3 +34,4 @@ Changelog (high level)
 - Added targeted cache invalidation + Redis lockout tests
 - Added pg_trgm trigram GIN indexes (Postgres-only)
 - CI workflows for tests, S3 smoke, docs publish, and Redis lockout
+\n

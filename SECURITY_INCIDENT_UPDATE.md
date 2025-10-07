@@ -116,3 +116,4 @@ Recommended final steps
 - Option B: If you prefer using `GITHUB_TOKEN` only, ensure repository settings allow GitHub Actions to write repository contents (Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests / read and write permissions). After that re-run the workflow.
 
 I can create a follow-up PR that tweaks the workflow further (for example add debugging output or a single-step deploy) if you want me to.
+\n

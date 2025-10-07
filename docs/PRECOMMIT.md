@@ -25,3 +25,4 @@ We recommend adding a CI job that runs `pre-commit run --all-files` (or `detect-
 Baseline maintenance
 --------------------
 If hooks flag known, intentional false positives (e.g., test fixtures), add them to `.secrets.baseline` using `detect-secrets audit` and commit the baseline.
+\n

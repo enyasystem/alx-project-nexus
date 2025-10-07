@@ -19,3 +19,4 @@ urlpatterns = [
 # In development serve uploaded media files directly from MEDIA_ROOT
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+\n
