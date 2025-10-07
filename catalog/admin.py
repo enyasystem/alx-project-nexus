@@ -16,7 +16,14 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ('image_tag',)
 
     def image_tag(self, obj):
-        if obj.image:
+        # Prefer the first ProductImage (if present) so list view shows images
+        try:
+            first = obj.images.all().first()
+        except Exception:
+            first = None
+        if first and getattr(first, 'image', None):
+            return format_html('<img src="{}" style="max-height:60px; max-width:100px; object-fit:cover;" />', first.image.url)
+        if getattr(obj, 'image', None):
             return format_html('<img src="{}" style="max-height:60px; max-width:100px; object-fit:cover;" />', obj.image.url)
         return ''
 
